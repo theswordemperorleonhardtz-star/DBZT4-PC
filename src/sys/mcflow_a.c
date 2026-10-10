@@ -457,7 +457,7 @@ void McFlow_UpdateSave(void) {
             }
             break;
         }
-        if (McCard_WriteSave(0, gSaveData, 0x4000, &gMcFlow->req) == 0) {
+        if (McCard_WriteSave(0, gSaveData, MCFLOW_SAVE_SIZE, &gMcFlow->req) == 0) {
             if (MCF_CARD.result < 0) {
                 MCF_GO(0x11);
             }
@@ -758,7 +758,7 @@ void McFlow_UpdateLoad(void) {
             }
             break;
         }
-        if (McCard_ReadFile(0, &gMcFlow->saveBuf, 0x4000, &gMcFlow->req) == 0) {
+        if (McCard_ReadFile(0, &gMcFlow->saveBuf, MCFLOW_SAVE_SIZE, &gMcFlow->req) == 0) {
             if (MCF_CARD.result < 0) {
                 MCF_GO(0x15);
             }
@@ -767,7 +767,7 @@ void McFlow_UpdateLoad(void) {
                 MCF_GO(0x1D);
                 break;
             }
-            if (McCard_Checksum(&gMcFlow->saveBuf, 0x4000, 0) != 0) {
+            if (McCard_Checksum(&gMcFlow->saveBuf, MCFLOW_SAVE_SIZE, 0) != 0) {
                 MCF_GO(0x1D);
                 break;
             }
@@ -1069,7 +1069,7 @@ void McFlow_UpdateBootLoad(void) {
             }
             break;
         }
-        if (McCard_ReadFile(0, &gMcFlow->saveBuf, 0x4000, &gMcFlow->req) == 0) {
+        if (McCard_ReadFile(0, &gMcFlow->saveBuf, MCFLOW_SAVE_SIZE, &gMcFlow->req) == 0) {
             if (MCF_CARD.result < 0) {
                 MCF_GO(0x15);
             }
@@ -1078,7 +1078,7 @@ void McFlow_UpdateBootLoad(void) {
                 MCF_GO(0x1D);
                 break;
             }
-            if (McCard_Checksum(&gMcFlow->saveBuf, 0x4000, 0) != 0) {
+            if (McCard_Checksum(&gMcFlow->saveBuf, MCFLOW_SAVE_SIZE, 0) != 0) {
                 MCF_GO(0x1D);
                 break;
             }
@@ -1202,7 +1202,7 @@ void McFlow_UpdateNewSave(void) {
             gMcFlow->choice = 0;
             gMcFlow->flags |= 8;
             Save_SetDefaults(gSaveData);
-            McCard_Checksum(gSaveData, 0x4000, 1);
+            McCard_Checksum(gSaveData, MCFLOW_SAVE_SIZE, 1);
             SndOpt_Apply();
             Progress_ClearSession();
         } else if (gMcFlow->choice < 0) {
@@ -1362,7 +1362,7 @@ void McFlow_UpdateNewSave(void) {
             gMcFlow->timer = 0x78;
             gMcFlow->choice = 0;
             Save_SetDefaults(gSaveData);
-            McCard_Checksum(gSaveData, 0x4000, 1);
+            McCard_Checksum(gSaveData, MCFLOW_SAVE_SIZE, 1);
             SndOpt_Apply();
             Progress_ClearSession();
         } else if (gMcFlow->choice < 0) {
@@ -1389,7 +1389,7 @@ void McFlow_UpdateNewSave(void) {
             }
         } else {
             Save_SetDefaults(gSaveData);
-            McCard_Checksum(gSaveData, 0x4000, 1);
+            McCard_Checksum(gSaveData, MCFLOW_SAVE_SIZE, 1);
             SndOpt_Apply();
             Progress_ClearSession();
             gMcFlow->state = 0xF;
@@ -1405,7 +1405,7 @@ void McFlow_UpdateNewSave(void) {
             }
             break;
         }
-        if (McCard_WriteSave(0, gSaveData, 0x4000, &gMcFlow->req) == 0) {
+        if (McCard_WriteSave(0, gSaveData, MCFLOW_SAVE_SIZE, &gMcFlow->req) == 0) {
             if (MCF_CARD.result < 0) {
                 MCF_GO(0x11);
             }
@@ -1550,7 +1550,7 @@ void McFlow_UpdateNewSave(void) {
             }
         } else {
             Save_SetDefaults(gSaveData);
-            McCard_Checksum(gSaveData, 0x4000, 1);
+            McCard_Checksum(gSaveData, MCFLOW_SAVE_SIZE, 1);
             SndOpt_Apply();
             Progress_ClearSession();
             gMcFlow->state = 0xF;
@@ -2676,7 +2676,7 @@ void McFlow_Start(s32 mode) {
         gMcFlow->state = 0x23;
         gMcFlow->next = 0xC;
         McFlow_SetupRequest(0, 0);
-        McCard_Checksum(gSaveData, 0x4000, 1);
+        McCard_Checksum(gSaveData, MCFLOW_SAVE_SIZE, 1);
         break;
     case MCFLOW_MODE_LOAD:
         gMcFlow->flow = McFlow_UpdateLoad;
@@ -2699,7 +2699,7 @@ void McFlow_Start(s32 mode) {
         gMcFlow->state = 0x23;
         gMcFlow->next = 0x20;
         McFlow_SetupRequest(0, 0);
-        McCard_Checksum(gSaveData, 0x4000, 1);
+        McCard_Checksum(gSaveData, MCFLOW_SAVE_SIZE, 1);
         break;
     case MCFLOW_MODE_REPLAY_SAVE:
         gMcFlow->flow = McFlow_UpdateReplaySave;

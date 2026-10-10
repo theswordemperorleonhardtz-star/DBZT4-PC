@@ -62,9 +62,19 @@ typedef struct McFlowReq {
 } McFlowReq; /* size 0x420 */
 
 /* The system save as this code sees it (SaveData, include/sys/save.h). Its first 8 bytes are its checksum. */
+#ifdef BT3_MOD_DBZT4
+/* The mod's save block is 24960 bytes (0x6180) instead of 16384: the characters it adds need more
+   room.  Every McFlow_* site reads / writes that many bytes, and the field after saveBuf then lands
+   at 0x38 + 0x6180 = 0x61B8 -- which is exactly the offset the mod's McFlow_UpdateBootLoad+0x5C8
+   uses (25016 instead of 16440). */
+#define MCFLOW_SAVE_SIZE 0x6180
+#else
+#define MCFLOW_SAVE_SIZE 0x4000
+#endif
+
 typedef struct McFlowSave {
-    /* 0x0000 */ u64 unk0[0x4000 / 8];
-} McFlowSave; /* size 0x4000 */
+    /* 0x0000 */ u64 unk0[MCFLOW_SAVE_SIZE / 8];
+} McFlowSave; /* size 0x4000, or 0x6180 under BT3_MOD_DBZT4 */
 
 /* Local view of the replay block (BtlReplay, include/battle/battle_setup.h). */
 typedef struct McFlowReplayMember {
