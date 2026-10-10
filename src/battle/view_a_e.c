@@ -630,6 +630,11 @@ void ChrGrid_MoveDown(ChrGridCell *cells, s32 *col, s32 *row, s32 rows) {
         if (id == CHRGRID_ID_CUSTOM) {
             return;
         }
+#ifdef BT3_MOD_DBZT4
+        if (id >= BT4_CHRGRID_ID_NEW) { /* the mod's added characters are selectable too */
+            return;
+        }
+#endif
     } while (ChrGrid_MoveRight(cells, col, *row) == 0);
 }
 
@@ -649,6 +654,11 @@ void ChrGrid_MoveUp(ChrGridCell *cells, s32 *col, s32 *row, s32 rows) {
         if (id == CHRGRID_ID_CUSTOM) {
             return;
         }
+#ifdef BT3_MOD_DBZT4
+        if (id >= BT4_CHRGRID_ID_NEW) { /* the mod's added characters are selectable too */
+            return;
+        }
+#endif
     } while (ChrGrid_MoveRight(cells, col, *row) == 0);
 }
 
