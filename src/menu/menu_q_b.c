@@ -1957,8 +1957,15 @@ void SimDay_UpdateFaceLoad(void) {
         chara[0] = QPROG->member.chara;
         chara[1] = gSimDay->enemyChara;
         File_CancelRequests();
+#ifdef BT3_MOD_DBZT4
+        /* The mod picks the two portraits through its own helper (DBZQ 0x3C6EA8, sites 0x384F24 /
+           0x384F40); see the note in menu_n_c.c. */
+        File_Request(Bt4_FaceFileFrom(0, chara[0]), gSimDay->faceFile[0], SIMDAY_FACE_SIZE);
+        File_Request(Bt4_FaceFileFrom(0, chara[1]), gSimDay->faceFile[1], SIMDAY_FACE_SIZE);
+#else
         File_Request(chara[0] + SIMDAY_FACE_FILE, gSimDay->faceFile[0], SIMDAY_FACE_SIZE);
         File_Request(chara[1] + SIMDAY_FACE_FILE, gSimDay->faceFile[1], SIMDAY_FACE_SIZE);
+#endif
         gSimDay->loadState = SIMDAY_LOAD_READ;
         break;
     case SIMDAY_LOAD_READ:

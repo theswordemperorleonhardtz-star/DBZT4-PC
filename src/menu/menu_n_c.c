@@ -706,8 +706,18 @@ void UbRank_UpdateFaceLoad(void) {
         chara[0] = NPROG->chara;
         chara[1] = gUbRank->curFoe->chara;
         File_CancelRequests();
+#ifdef BT3_MOD_DBZT4
+        /* The mod picks the two portraits through its own helper (DBZQ 0x3C6FB0, sites 0x375E48 /
+           0x375E64): the player's character (the progress block) and the opponent's, both from the
+           block the mod appends.  Its helper reads those same two values through its own offsets;
+           the tool then adds the helper's own base register to the file id, which cannot be an id,
+           so the constant alone is what it means, as in the other loaders. */
+        File_Request(Bt4_FaceFileFrom(0, chara[0]), gUbRank->faceFile[0], 0x16800);
+        File_Request(Bt4_FaceFileFrom(0, chara[1]), gUbRank->faceFile[1], 0x16800);
+#else
         File_Request(chara[0] + N_FACE_FILE, gUbRank->faceFile[0], 0x16800);
         File_Request(chara[1] + N_FACE_FILE, gUbRank->faceFile[1], 0x16800);
+#endif
         gUbRank->loadState = UBRANK_LOAD_READ;
         break;
     case UBRANK_LOAD_READ:
