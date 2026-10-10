@@ -700,9 +700,19 @@ s32 ChrGrid_FixCursor(ChrGridCell *cells, s32 *col, s32 *row, s32 rows) {
     }
 }
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's stage scheme (DBZQ 0x3C5350..0x3C5418): stage ids 0x24..0x27 are its reserved slots,
+   which the cursor skips, and 0x28 and up are the stages it adds. */
+#define BT4_STGGRID_ID_RESERVED 0x24
+#define BT4_STGGRID_ID_NEW 0x28
+#define BT4_STGGRID_SELECTABLE(id) ((id) < BT4_STGGRID_ID_RESERVED || (id) >= BT4_STGGRID_ID_NEW)
+#else
+#define BT4_STGGRID_SELECTABLE(id) ((id) < STGGRID_ID_LOCKED)
+#endif
+
 /* Non-zero if the stage cell is an unlocked stage. */
 s32 StgGrid_IsSelectable(s32 *ids, s32 index) {
-    return ids[index] < STGGRID_ID_LOCKED;
+    return BT4_STGGRID_SELECTABLE(ids[index]);
 }
 
 /* Moves the stage cursor right to the next unlocked stage; it stops in column 6 (the column past the grid). */
@@ -714,7 +724,7 @@ void StgGrid_MoveRight(s32 *ids, s32 *col, s32 row) {
         } else if (*col == STGGRID_COLS) {
             break;
         }
-    } while (ids[row * STGGRID_COLS + *col] >= STGGRID_ID_LOCKED);
+    } while (!BT4_STGGRID_SELECTABLE(ids[row * STGGRID_COLS + *col]));
 }
 
 /* Moves the stage cursor left to the next unlocked stage; from column 0 it goes to column 6. */
@@ -725,7 +735,7 @@ void StgGrid_MoveLeft(s32 *ids, s32 *col, s32 row) {
             *col = STGGRID_COLS;
             return;
         }
-        if (ids[row * STGGRID_COLS + *col] < STGGRID_ID_LOCKED) {
+        if (BT4_STGGRID_SELECTABLE(ids[row * STGGRID_COLS + *col])) {
             return;
         }
     }
@@ -745,7 +755,7 @@ s32 StgGrid_MoveRightWrap(s32 *ids, s32 *col, s32 row) {
             ok = 0;
             break;
         }
-    } while (ids[row * STGGRID_COLS + *col] >= STGGRID_ID_LOCKED);
+    } while (!BT4_STGGRID_SELECTABLE(ids[row * STGGRID_COLS + *col]));
     return ok;
 }
 
@@ -757,7 +767,7 @@ void StgGrid_MoveDown(s32 *ids, s32 *col, s32 *row, s32 rows) {
         if (*row > rows - 1) {
             *row = 0;
         }
-        if (ids[*row * STGGRID_COLS + *col] < STGGRID_ID_LOCKED) {
+        if (BT4_STGGRID_SELECTABLE(ids[*row * STGGRID_COLS + *col])) {
             break;
         }
         if (StgGrid_MoveRightWrap(ids, col, *row) != 0) {
@@ -774,7 +784,7 @@ void StgGrid_MoveUp(s32 *ids, s32 *col, s32 *row, s32 rows) {
         if (*row < 0) {
             *row = rows - 1;
         }
-        if (ids[*row * STGGRID_COLS + *col] < STGGRID_ID_LOCKED) {
+        if (BT4_STGGRID_SELECTABLE(ids[*row * STGGRID_COLS + *col])) {
             break;
         }
         if (StgGrid_MoveRightWrap(ids, col, *row) != 0) {
