@@ -50,9 +50,13 @@ typedef struct McCardPort {
    for both.  A save written by this build therefore sits where the mod's own saves do. */
 #define MC_SAVE_PREFIX "BASLUS-21922"
 #define MC_SAVE_DIR    "BASLUS-21922DBZT3P"
+#define MC_SAVE_NAME   "DBZT3P"
+#define MC_SAVE_NAME_R "DBZT3PR"
 #else
 #define MC_SAVE_PREFIX "BASLUS-21678"
 #define MC_SAVE_DIR    "BASLUS-21678DBZT3"
+#define MC_SAVE_NAME   "DBZT3"
+#define MC_SAVE_NAME_R "DBZT3R"
 #endif
 
 /* One save (a directory on the card with icon.sys, an icon and the data file). */

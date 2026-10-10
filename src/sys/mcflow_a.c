@@ -161,14 +161,14 @@ void McFlow_SetupRequest(s32 kind, s32 slot) {
         gMcFlow->req.iconSize = 0x9C9A;
         strcpy((char *)&gMcFlow->req.title, MCFLOW_TITLE_SAVE);
         gMcFlow->req.titleBreak = 0x18;
-        McCardFile_SetNames(&gMcFlow->req, "DBZT3", -1, -1, 0);
+        McCardFile_SetNames(&gMcFlow->req, MC_SAVE_NAME, -1, -1, 0);
     } else {
         gMcFlow->req.icon = (u8 *)gMcFlow->res + (gMcFlow->res[2] / 4 * 4);
         gMcFlow->req.iconSize = 0xBE8A;
         strcpy((char *)&gMcFlow->req.title, MCFLOW_TITLE_REPLAY);
         gMcFlow->req.titleBreak = 0x1E;
         gMcFlow->req.title.text[0x2D] += slot + 1;
-        McCardFile_SetNames(&gMcFlow->req, "DBZT3R", slot, -1, 1);
+        McCardFile_SetNames(&gMcFlow->req, MC_SAVE_NAME_R, slot, -1, 1);
     }
 }
 
