@@ -1401,17 +1401,48 @@ s32 BtlParam_TestUnkADBit(BtlTechChr *chr, s32 n) {
 
 /* Parameter +0xB4 + n: fusion n. */
 s32 BtlParam_GetUnkB4(BtlTechChr *chr, s32 n) {
+#ifdef BT3_MOD_DBZT4
+    /* The mod (DBZQ 0x3C4F20): when the u8 table holds 0, read the u16 table at +0xD8. */
+    u8 *p = (u8 *)BtlChar_GetObj(chr)->param;
+
+    if (p[0xB4 + n] == 0) {
+        return *(u16 *)(p + 0xD8 + n * 2);
+    }
+    return p[0xB4 + n];
+#else
     return BtlChar_GetObj(chr)->param->fusionResult[n];
+#endif
 }
 
 /* Parameter +0xB7 + n: fusion n. */
 s32 BtlParam_GetUnkB7(BtlTechChr *chr, s32 n) {
+#ifdef BT3_MOD_DBZT4
+    /* The mod (DBZQ 0x3C4F48): same fallback, u16 table at +0xDE. */
+    u8 *p = (u8 *)BtlChar_GetObj(chr)->param;
+
+    if (p[0xB7 + n] == 0) {
+        return *(u16 *)(p + 0xDE + n * 2);
+    }
+    return p[0xB7 + n];
+#else
     return BtlChar_GetObj(chr)->param->fusionB7[n];
+#endif
 }
 
 /* Parameter +0xBA + n * 4 + m: partner m of fusion n. */
 s32 BtlParam_GetUnkBA(BtlTechChr *chr, s32 n, s32 m) {
+#ifdef BT3_MOD_DBZT4
+    /* The mod (DBZQ 0x3C4F78): same fallback, u16 table at +0xE4. */
+    u8 *p = (u8 *)BtlChar_GetObj(chr)->param;
+    s32 i = n * 4 + m;
+
+    if (p[0xBA + i] == 0) {
+        return *(u16 *)(p + 0xE4 + i * 2);
+    }
+    return p[0xBA + i];
+#else
     return BtlChar_GetObj(chr)->param->fusionPartner[n][m];
+#endif
 }
 
 /* Parameter +0xAE + n, times 100000: blast gauge fusion n costs. */
