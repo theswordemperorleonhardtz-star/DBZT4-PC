@@ -719,7 +719,17 @@ void BtlAct_CheckForced(BtlActChr *chr) {
     }
     if (BtlChar_TestFlag(chr, 0x7C)) {
         BtlDecide_QueueAttack(chr, BtlAct_GetEvasionAttack(chr));
+#ifdef BT3_MOD_DBZT4
+        /* The mod's wrapper around this one request (injected function 0x3BFDDC): it requests
+           the evasion action as usual, then, for the first fighter only and once its unkD88
+           reached 3, also raises flag 0x62. */
         BtlAct_Request(chr, BtlAct_GetQueued_(chr));
+        if (BtlChar_Get(0) == chr && chr->unkD88 >= 3) {
+            BtlChar_SetFlag(chr, 0x62);
+        }
+#else
+        BtlAct_Request(chr, BtlAct_GetQueued_(chr));
+#endif
     }
     if (BtlChar_TestFlag(chr, 0x6D)) {
         BtlAct_Request(chr, 0xC9);
