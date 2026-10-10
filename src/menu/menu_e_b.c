@@ -792,6 +792,11 @@ void TeamSel_Term(void) {
 }
 
 /* Draws the two stage pictures (cross fade), sets up every clip of the seven movies and draws them and the windows. */
+#ifdef BT3_MOD_DBZT4
+/* The mod's shared colour-plate chooser, menu_c_e.c (DBZQ 0x3C615C). */
+extern void Bt4_DrawColorPlates(MFlash *f, s32 count, s32 chosen);
+#endif
+
 void TeamSel_Draw(void) {
     MFlashRef ref;
     MFlashUv uv;
@@ -935,6 +940,12 @@ void TeamSel_Draw(void) {
                                        TS_RANDOM);
             }
         }
+#ifdef BT3_MOD_DBZT4
+        /* The mod replaces this inline chooser with the shared routine (DBZQ 0x3C615C, site 0x34C8EC)
+           and shows seven plates, the chosen one lit. */
+        Bt4_DrawColorPlates(flash, gTeamSel->colorCount[i],
+                            gTeamSel->side[i]->member[gTeamSel->side[i]->cur].color);
+#else
         for (j = 0; j < 4; j++) {
             uv.x0 = (j % 2) * 0x40;
             uv.x1 = uv.x0 + 0x40;
@@ -960,6 +971,7 @@ void TeamSel_Draw(void) {
                 Flash_ClipSetFlags(flash, &ref, 2, 0);
             }
         }
+#endif
     }
     for (i = 0; i < TEAMSEL_SIDES; i++) {
         u32 n;

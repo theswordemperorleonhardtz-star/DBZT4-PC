@@ -387,6 +387,11 @@ void EntrySel_Term(void) {
 }
 
 /* Sets up every clip of the four movies from the current state and draws the screen. */
+#ifdef BT3_MOD_DBZT4
+/* The mod's shared colour-plate chooser, menu_c_e.c (DBZQ 0x3C615C). */
+extern void Bt4_DrawColorPlates(MFlash *f, s32 count, s32 chosen);
+#endif
+
 void EntrySel_Draw(void) {
     MFlashRef ref;
     MFlashUv uv;
@@ -470,6 +475,11 @@ void EntrySel_Draw(void) {
             Flash_ClipSetFlags(flash, &ref, 2, ES_CELL.id != ESEL_ID_RANDOM);
         }
     }
+#ifdef BT3_MOD_DBZT4
+    /* The mod replaces this inline chooser with the shared routine (DBZQ 0x3C615C) and shows
+       seven plates, the chosen one lit. */
+    Bt4_DrawColorPlates(flash, gEntrySel->colorCount, ES_CUR.costume);
+#else
     for (i = 0; i < 4; i++) {
         /* costume plates */
         uv.x0 = (i % 2) * 0x40;
@@ -496,6 +506,7 @@ void EntrySel_Draw(void) {
             Flash_ClipSetFlags(flash, &ref, 2, 0);
         }
     }
+#endif
     flash = &gEntrySel->flash[1];
     if (TOUR_PROG->t.entryNum - 1 < gEntrySel->sel->cur) {
         uv.x0 = ((gEntrySel->sel->cur - 1) % 2) * 0x40;

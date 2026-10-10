@@ -1138,6 +1138,11 @@ void CharSel_Draw(void) {
                                    gCharSel->cells[i][gCharSel->side[i]->col + gCharSel->side[i]->row * 7].id != MCHR_RANDOM);
             }
         }
+#ifdef BT3_MOD_DBZT4
+        /* The mod replaces this inline chooser with the shared routine (DBZQ 0x3C615C, one call per
+           side) and shows seven plates, the chosen one lit. */
+        Bt4_DrawColorPlates(f, gCharSel->colorCount[i], gCharSel->side[i]->colorPlate);
+#else
         for (j = 0; j < 4; j++) {
             uv.x0 = (j % 2) * 0x40;
             uv.y0 = (j / 2) * 0x20;
@@ -1163,6 +1168,7 @@ void CharSel_Draw(void) {
                 Flash_ClipSetFlags(f, &ref, 2, 0);
             }
         }
+#endif
     }
 
     for (i = 0; i < CHARSEL_SIDES; i++) {
