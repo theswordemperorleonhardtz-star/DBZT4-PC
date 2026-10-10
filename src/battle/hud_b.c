@@ -611,6 +611,13 @@ void HudGauge_UpdateBlast(void) {
 #define HUDINIT_C_Y (-19)  /* was 3 */
 #define HUDINIT_D_DX 0x22  /* was 0x30 */
 #define HUDINIT_E_DX 0x33  /* was 0x48 */
+#define HUDINIT_F_DX 0x11  /* was 0x18 (only the three sprites that follow a frame/shade pair) */
+/* Four of this function's sprite textures take a different row (the a3 = 1 -> 2/3/4/5 sites at
+   0x22007C / 0x2200DC / 0x2201FC / 0x22025C, i.e. the 10th, 11th, 14th and 15th InitTex calls). */
+#define HUDINIT_TEX1 2
+#define HUDINIT_TEX2 3
+#define HUDINIT_TEX3 4
+#define HUDINIT_TEX4 5
 #else
 #define HUDINIT_A_X 0xA
 #define HUDINIT_A_Y (-6)
@@ -620,6 +627,13 @@ void HudGauge_UpdateBlast(void) {
 #define HUDINIT_C_Y 3
 #define HUDINIT_D_DX 0x30
 #define HUDINIT_E_DX 0x48
+#define HUDINIT_F_DX 0x18
+
+/* Four of HudGauge_Init's sprite textures take a different row in the mod. */
+#define HUDINIT_TEX1 1
+#define HUDINIT_TEX2 1
+#define HUDINIT_TEX3 1
+#define HUDINIT_TEX4 1
 #endif
 
 #ifdef BT3_MOD_DBZT4
@@ -1163,12 +1177,12 @@ void HudGauge_Init(HudBGroup **out, void *res) {
     HudSprite_SetUv(spr, 0, 0xA0, 0, 0x10);
     HudSprite_Move(spr, 0, 0);
     spr = &gHudGauge->spr[9];
-    HudSprite_InitTex(spr, res, 8, 1);
+    HudSprite_InitTex(spr, res, 8, HUDINIT_TEX1);
     HudSprite_SetRect(spr, 0, 0x10, 0, 0x10);
     HudSprite_SetUv(spr, 0, 0x10, 0x10, 0x20);
     HudSprite_Move(spr, 0, 0);
     spr = &gHudGauge->spr[10];
-    HudSprite_InitTex(spr, res, 8, 1);
+    HudSprite_InitTex(spr, res, 8, HUDINIT_TEX2);
     HudSprite_SetRect(spr, 0, 0x10, 0, 0x10);
     HudSprite_SetUv(spr, 0, 0x10, 0x10, 0x20);
     HudSprite_Move(spr, 9, 0);
@@ -1183,12 +1197,12 @@ void HudGauge_Init(HudBGroup **out, void *res) {
     HudSprite_SetUv(spr, 0, 0x10, 0x10, 0x20);
     HudSprite_Move(spr, 0x1B, 0);
     spr = &gHudGauge->spr[13];
-    HudSprite_InitTex(spr, res, 8, 1);
+    HudSprite_InitTex(spr, res, 8, HUDINIT_TEX3);
     HudSprite_SetRect(spr, 0, 0x10, 0, 0x10);
     HudSprite_SetUv(spr, 0, 0x10, 0x10, 0x20);
     HudSprite_Move(spr, 0x24, 0);
     spr = &gHudGauge->spr[14];
-    HudSprite_InitTex(spr, res, 8, 1);
+    HudSprite_InitTex(spr, res, 8, HUDINIT_TEX4);
     HudSprite_SetRect(spr, 0, 0x10, 0, 0x10);
     HudSprite_SetUv(spr, 0, 0x10, 0x10, 0x20);
     HudSprite_Move(spr, 0x2D, 0);
@@ -1322,7 +1336,7 @@ void HudGauge_Init(HudBGroup **out, void *res) {
     HudSprite_InitTex(spr, res, 0xF, 0);
     HudSprite_SetRect(spr, 0, HUDSTAT_FRAME_W, 0, HUDSTAT_FRAME_H);
     HudSprite_SetUv(spr, 0, HUDSTAT_FRAME_U1, 0x16, HUDSTAT_FRAME_V1);
-    HudSprite_Move(spr, 0x18, 0);
+    HudSprite_Move(spr, HUDINIT_F_DX, 0);
     HudSprite_Move(spr, HUDSTAT_FRAME_DX, HUDSTAT_FRAME_DY);
     spr = &gHudGauge->spr[41];
     HudSprite_InitTex(spr, res, 0xF, 0);
@@ -1343,7 +1357,7 @@ void HudGauge_Init(HudBGroup **out, void *res) {
     spr = &gHudGauge->spr[44];
     HudSprite_InitTex(spr, res, 0x14, 0);
     HudSprite_Move(spr, HUDSTAT_ICON_X, HUDSTAT_ICON_Y);
-    HudSprite_Move(spr, 0x18, 0);
+    HudSprite_Move(spr, HUDINIT_F_DX, 0);
     spr = &gHudGauge->spr[45];
     HudSprite_InitTex(spr, res, 0x15, 0);
     HudSprite_Move(spr, HUDSTAT_ICON_X, HUDSTAT_ICON_Y);
@@ -1369,7 +1383,7 @@ void HudGauge_Init(HudBGroup **out, void *res) {
     HudSprite_InitTex(spr, res, 0xF, 0);
     HudSprite_SetRect(spr, 3, HUDSTAT_SHADE_W, 1, HUDSTAT_SHADE_H);
     HudSprite_SetUv(spr, 0, HUDSTAT_SHADE_U1, 0x2C, HUDSTAT_SHADE_V1);
-    HudSprite_Move(spr, 0x18, 0);
+    HudSprite_Move(spr, HUDINIT_F_DX, 0);
     HudSprite_Move(spr, HUDSTAT_FRAME_DX, HUDSTAT_FRAME_DY);
     spr = &gHudGauge->spr[51];
     HudSprite_InitTex(spr, res, 0xF, 0);
