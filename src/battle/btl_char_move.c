@@ -1668,7 +1668,12 @@ void BtlMove_UpdateDefenseTimers(BtlMoveChr *chr) {
     if (chr->unk1070 < -30) {
         chr->unk1070 = -30;
         if (BtlInput_TestAction(chr, 0x26, 1)) {
+#ifdef BT3_MOD_DBZT4
+            /* The mod reopens this defence window for 5 frames instead of 1 (site 0x1E012C). */
+            chr->unk1070 = 5;
+#else
             chr->unk1070 = 1;
+#endif
         }
     } else {
         if (BtlInput_TestAction(chr, 0x26, 1)) {
