@@ -220,7 +220,10 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
 }
 
 #define HEAP_CHECK(tag, heap, size, align, tail, ret) do { \
-        if (gHeapCheckOn < 0) { gHeapCheckOn = getenv("BT3_HEAP_CHECK") != NULL; } \
+        if (gHeapCheckOn < 0) { \
+            gHeapCheckOn = getenv("BT3_HEAP_CHECK") != NULL; \
+            if (gHeapCheckOn) { fprintf(stderr, "bt3: heap check on (every allocation and free)\n"); fflush(stderr); } \
+        } \
         if (gHeapCheckOn) { Heap_CheckAll((tag), (heap), (size), (align), (tail), (const void *)(ret)); } \
     } while (0)
 #else
