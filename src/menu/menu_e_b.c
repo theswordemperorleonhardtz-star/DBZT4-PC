@@ -447,6 +447,10 @@ void TeamSel_Init(s32 section) {
 
     gTeamSel = Heap_Alloc(sizeof(TeamSel), 0x20, 0, 2);
     memset(gTeamSel, 0, sizeof(TeamSel));
+#ifdef BT3_MOD_DBZT4
+    /* The mod's struct carries the relation tables at its end (bt4_links.c). */
+    Bt4_TeamSel_InitLinks(gTeamSel);
+#endif
     gTeamSel->pack = (u32 *)MPACK_AT(gMenuArc5, section);
     gTeamSel->res = Sprite_Unpack(gTeamSel->pack, NULL, NULL);
     TS_RES(47);

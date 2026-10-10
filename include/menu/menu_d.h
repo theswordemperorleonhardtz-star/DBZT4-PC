@@ -211,6 +211,7 @@ typedef struct CharSel {
 #ifdef BT3_MOD_DBZT4
 /* The mod's table and the helper that copies it (and its twin) into a fresh struct (bt4_links.c). */
 extern const s32 Bt4_CharSelLinks[BT4_CHARSEL_LINKS][9];
+void Bt4_Links_Fill(s32 (*links1)[9], s32 (*links2)[9]);
 void Bt4_CharSel_InitLinks(CharSel *cs);
 #endif
 

@@ -173,7 +173,25 @@ typedef struct TeamSel {
     /* 0x3C70 */ MTextBox nameBox[TEAMSEL_SIDES];
     /* 0x3D88 */ MTextBox formBox[TEAMSEL_SIDES];
     /* 0x3EA0 */ void *unk3EA0;             /* common file 4, section 2 */
-} TeamSel; /* 0x3EA4 */
+#ifdef BT3_MOD_DBZT4
+    /* The mod appends the same per-character relation tables to this screen's struct: a 0x28 gap,
+       the table, a 0x12FC gap, a copy of the table and a 0x12D8 gap, so the struct ends at 0x91A0
+       = 37280 -- the size the mod's TeamSel_Init asks Heap_Alloc for.  A runtime dump of the
+       Brazilian build puts the tables at 0x3ECC / 0x6848, i.e. exactly sizeof(TeamSel) + 0x28 and
+       + 0x1680 + 0x12FC later, and their 160 records match the character-select table byte for
+       byte (bt4_links.c). */
+    /* 0x3EA4 */ u8  unk3EA4[0x28];
+    /* 0x3ECC */ s32 links1[BT4_CHARSEL_LINKS][9];
+    /* 0x554C */ u8  unk554C[0x12FC];
+    /* 0x6848 */ s32 links2[BT4_CHARSEL_LINKS][9];
+    /* 0x7EC8 */ u8  unk7EC8[0x12D8];
+#endif
+} TeamSel; /* 0x3EA4, or 0x91A0 under BT3_MOD_DBZT4 */
+
+#ifdef BT3_MOD_DBZT4
+/* Fills this screen's two table copies from the shared data (bt4_links.c). */
+void Bt4_TeamSel_InitLinks(TeamSel *ts);
+#endif
 
 #define TEAMSEL_STAGE_CHANGE 0x20  /* the stage under the cursor changed: load its picture */
 #define TEAMSEL_STAGE_READY 0x40   /* the picture is loaded and fades in */

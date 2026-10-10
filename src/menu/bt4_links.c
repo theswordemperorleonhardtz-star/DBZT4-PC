@@ -182,17 +182,28 @@ const s32 Bt4_CharSelLinks[BT4_CHARSEL_LINKS][9] = {
     { 164, 0,   0,   0,   0,   0,   0,   0,   0 },
 };
 
-/* Copies the table (and its twin) into the screen's struct. */
-void Bt4_CharSel_InitLinks(CharSel *cs) {
+/* Copies the table (and its twin) into a pair of arrays. */
+void Bt4_Links_Fill(s32 (*links1)[9], s32 (*links2)[9]) {
     s32 i;
     s32 j;
 
     for (i = 0; i < BT4_CHARSEL_LINKS; i++) {
         for (j = 0; j < 9; j++) {
-            cs->links1[i][j] = Bt4_CharSelLinks[i][j];
-            cs->links2[i][j] = Bt4_CharSelLinks[i][j];
+            links1[i][j] = Bt4_CharSelLinks[i][j];
+            links2[i][j] = Bt4_CharSelLinks[i][j];
         }
     }
+}
+
+/* The character-select screen's two copies. */
+void Bt4_CharSel_InitLinks(CharSel *cs) {
+    Bt4_Links_Fill(cs->links1, cs->links2);
+}
+
+/* The team-select screen's: a runtime dump of the Brazilian build shows its tables hold the very
+   same 160 records (see the note in include/menu/menu_e.h). */
+void Bt4_TeamSel_InitLinks(TeamSel *ts) {
+    Bt4_Links_Fill(ts->links1, ts->links2);
 }
 
 #endif
