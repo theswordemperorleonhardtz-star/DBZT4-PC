@@ -926,6 +926,16 @@ void StgAmb_Start(void) {
         gStgAmb.update = StgAmb_Update22;
         break;
     }
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (DBZQ 0x3C5130, tail-jumped to from BtlStage_Reset and StgAmb_Init):
+       the stages it adds have no case above, reuse the first handler and play their own music. */
+    if (id >= 40) {
+        gStgAmb.update = StgAmb_Update00;
+        MapBgm_Play(id + 0x111E3);
+        StgAmb_SetBgmVolume(0);
+        return;
+    }
+#endif
     MapBgm_Play(id + 0x10BA4);
     StgAmb_SetBgmVolume(0);
 }
