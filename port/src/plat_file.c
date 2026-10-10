@@ -184,11 +184,14 @@ void *ADXF_Open(char *fname, void *atr) {
     return open_rel(rel);
 }
 
+extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
+
 void ADXF_Close(void *h) {
     PortFile *f = h;
 
     if (f != NULL) {
         Port_LowFree(f); /* (the host's file stays open for a while: plat_fcache.c) */
+        Heap_CheckNow("ADXF_Close: after the handle went back to the port's region");
     }
 }
 

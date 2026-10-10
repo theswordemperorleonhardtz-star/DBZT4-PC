@@ -208,9 +208,27 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
             if ((u8 *)block < lo || (u8 *)block + 0x20 > hi || block->magic != HEAP_MAGIC ||
                 block->size < 0x20 || block->size > (s32)(hi - (u8 *)block) || ++guard > 200000) {
                 int k;
+                int w;
                 fprintf(stderr,
                         "bt3: HEAP BROKEN in heap %d: %s (heap=%d size=%d align=%u tail=%d, its caller %p)\n",
                         (int)h, what, (int)heap, (int)size, align, (int)fromTail, ret);
+                fprintf(stderr, "bt3: the block at %p: magic %08X (want %08X) size %d dataSize %d used %d\n",
+                        (void *)block, (unsigned)block->magic, (unsigned)HEAP_MAGIC, (int)block->size,
+                        (int)block->dataSize, (int)block->used);
+                /* The bytes that were written over the header are the signature of whatever wrote them. */
+                fprintf(stderr, "bt3: its first 48 bytes:");
+                for (w = 0; w < 48; w++) {
+                    fprintf(stderr, " %02X", ((u8 *)block)[w]);
+                }
+                fprintf(stderr, "\n");
+                {   /* and the bytes just before it, often the run that ran over the end of the block */
+                    int b;
+                    fprintf(stderr, "bt3: the 16 bytes before the block:");
+                    for (b = -16; b < 0; b++) {
+                        fprintf(stderr, " %02X", ((u8 *)block)[b]);
+                    }
+                    fprintf(stderr, "\n");
+                }
                 fprintf(stderr, "bt3: the last %d heap operations, oldest first (caller, and its caller):\n",
                         gHeapHistHave);
                 for (k = 0; k < gHeapHistHave; k++) {
@@ -229,6 +247,17 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
     gHeapHistAt = (gHeapHistAt + 1) % HEAP_HIST;
     if (gHeapHistHave < HEAP_HIST) {
         gHeapHistHave++;
+    }
+}
+
+/* The same walk, callable from elsewhere in the port (the file path) to pin the exact line. */
+void Heap_CheckNow(const char *what) {
+    if (gHeapCheckOn < 0) {
+        gHeapCheckOn = getenv("BT3_HEAP_CHECK") != NULL;
+        if (gHeapCheckOn) { fprintf(stderr, "bt3: heap check on (every allocation and free)\n"); fflush(stderr); }
+    }
+    if (gHeapCheckOn) {
+        Heap_CheckAll(what, HEAP_ANY, 0, 0, 0, 0, 0);
     }
 }
 

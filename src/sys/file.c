@@ -321,6 +321,10 @@ void File_CancelRequests(void) {
 }
 
 /* Queues an asynchronous read of file `id`; allocates the buffer when buf is NULL. Returns the buffer. */
+#ifdef PORT
+extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
+#endif
+
 void *File_Request(s32 id, void *buf) {
     FileReqQueue *queue = &gFileReq;
     s32 flags = 0;
@@ -340,6 +344,9 @@ void *File_Request(s32 id, void *buf) {
         flags = FILE_REQ_OWNS_BUF;
     }
     ADXF_Close(adxf);
+#ifdef PORT
+    Heap_CheckNow("File_Request: after the file handle is closed");
+#endif
 
     req = (FileReq *)List_PopFront(&queue->free);
     req->flags = flags;
@@ -347,6 +354,9 @@ void *File_Request(s32 id, void *buf) {
     req->sectors = sectors;
     req->buf = dst;
     List_PushBack(&queue->pending, &req->node);
+#ifdef PORT
+    Heap_CheckNow("File_Request: after the request was queued");
+#endif
     buf = dst;
     return buf;
 }
