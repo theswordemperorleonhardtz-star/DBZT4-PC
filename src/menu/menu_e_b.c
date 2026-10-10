@@ -1271,7 +1271,14 @@ f32 TeamSel_Input(s32 *result) {
                 Flash_GotoLabel(&gTeamSel->flash[0], "fl_reel_down", 1);
                 gTeamSel->stage->mask = 1;
                 TeamSel_ClipGoto(0, 0, TEAMSEL_CLIP_STAGE_CHIP, "fl_off_start");
-                StgGrid_MoveUp(gTeamSel->stageIds, &gTeamSel->stage->col, &gTeamSel->stage->row, TS_STAGE_COLS);
+    #ifdef BT3_MOD_DBZT4
+            /* The mod's stage list is longer, so the team-select stage grid has nine rows (the two
+               sites 0x34D708 / 0x34D7E8 pass 9 instead of TS_STAGE_COLS).  The chip array keeps its
+               six columns. */
+            StgGrid_MoveUp(gTeamSel->stageIds, &gTeamSel->stage->col, &gTeamSel->stage->row, 9);
+#else
+            StgGrid_MoveUp(gTeamSel->stageIds, &gTeamSel->stage->col, &gTeamSel->stage->row, TS_STAGE_COLS);
+#endif
                 TeamSel_ClipGoto(0, 0, TEAMSEL_CLIP_STAGE_CHIP, "fl_on_start");
                 TeamSel_SetStageChips();
                 gTeamSel->stage->stage = gTeamSel->stageIds[gTeamSel->stage->row * TS_STAGE_COLS + gTeamSel->stage->col];
@@ -1281,7 +1288,11 @@ f32 TeamSel_Input(s32 *result) {
                 Flash_GotoLabel(&gTeamSel->flash[0], "fl_reel_up", 1);
                 gTeamSel->stage->mask = 1;
                 TeamSel_ClipGoto(0, 0, TEAMSEL_CLIP_STAGE_CHIP, "fl_off_start");
-                StgGrid_MoveDown(gTeamSel->stageIds, &gTeamSel->stage->col, &gTeamSel->stage->row, TS_STAGE_COLS);
+    #ifdef BT3_MOD_DBZT4
+            StgGrid_MoveDown(gTeamSel->stageIds, &gTeamSel->stage->col, &gTeamSel->stage->row, 9);
+#else
+            StgGrid_MoveDown(gTeamSel->stageIds, &gTeamSel->stage->col, &gTeamSel->stage->row, TS_STAGE_COLS);
+#endif
                 TeamSel_ClipGoto(0, 0, TEAMSEL_CLIP_STAGE_CHIP, "fl_on_start");
                 TeamSel_SetStageChips();
                 gTeamSel->stage->stage = gTeamSel->stageIds[gTeamSel->stage->row * TS_STAGE_COLS + gTeamSel->stage->col];
