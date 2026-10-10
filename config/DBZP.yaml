@@ -1,5 +1,5 @@
-name: Dragon Ball Z - Budokai Tenkaichi 3 (USA) - BIN/DBZP.BIN overlay
-sha1: 4f910969e05d9b25c83af7642b60da9949a4348b
+name: Dragon Ball Z - Budokai Tenkaichi 3 (Brazil DBZT4 1.8 V2) - BIN/DBZP.BIN overlay
+sha1: c31deddb3df9048a9274185629fcb8c10b5ce61d
 options:
   basename: DBZP
   target_path: disc/BIN/DBZP.BIN
