@@ -502,6 +502,13 @@ s32 Option_Input(void) {
                 OPT_PLATE(OPT_CLIP_ROW_SOUND, "fl_off_start");
             }
             gOption->cursor--;
+#ifdef BT3_MOD_DBZT4
+            /* The mod's replacement (DBZQ 0x3C721C, site 0x3A16E4): the sound page's voice-language
+               row is gone, so the cursor steps over it instead of stopping on it. */
+            if (gOption->cursor == OPT_ITEM_VOICE) {
+                gOption->cursor--;
+            }
+#endif
             if (gOption->cursor < OPT_ITEM_STEREO) {
                 gOption->cursor = OPT_ITEM_SND_RESET;
             }
@@ -530,6 +537,12 @@ s32 Option_Input(void) {
                 OPT_PLATE(OPT_CLIP_ROW_SOUND, "fl_off_start");
             }
             gOption->cursor++;
+#ifdef BT3_MOD_DBZT4
+            /* The mod's replacement (DBZQ 0x3C7234, site 0x3A17EC): see the decrement above. */
+            if (gOption->cursor == OPT_ITEM_VOICE) {
+                gOption->cursor++;
+            }
+#endif
             if (gOption->cursor > OPT_ITEM_SND_RESET) {
                 gOption->cursor = OPT_ITEM_STEREO;
             }
