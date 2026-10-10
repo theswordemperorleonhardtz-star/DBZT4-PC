@@ -552,7 +552,13 @@ void Bracket_FillEntrants(LBracket *b) {
             for (;;) {
                 /* written as integer arithmetic: `&b->grid[n]` adds the two operands the other way round */
                 cell = (LChrCell *)(Rand_Range(b->gridCount) * sizeof(LChrCell) + (u32)b->grid);
+#ifdef BT3_MOD_DBZT4
+                /* The mod's replacement (DBZQ 0x3C68A4, site 0x369470): the characters it adds
+                   (0xAA..0x127) are drawn too, while 0xA1..0xA9 stay out. */
+                if (cell->id <= LCHR_ID_MAX || (cell->id >= 170 && cell->id < 296)) {
+#else
                 if (cell->id <= LCHR_ID_MAX) {
+#endif
                     chara = cell->id;
                     break;
                 }
