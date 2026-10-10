@@ -46,6 +46,16 @@ jobs:
           docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/src -w /src \
             bt3-port-release:jammy sh port/release/inside.sh
 
+      # The link maps: bt3_crash.txt points at them ("+ 0x..." addresses of the same build), so a crash
+      # report from a downloaded release can be read without rebuilding.  Not game data, just names.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bt3-symbols
+          path: |
+            port/build/bt3.exe.map
+            port/build/bt3_64.map
+          if-no-files-found: warn
+
       - uses: actions/upload-artifact@v4
         with:
           name: Tenkaichi3Decomp-linux-x64
