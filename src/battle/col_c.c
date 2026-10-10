@@ -240,8 +240,20 @@ void Font_InitEx(s32 unused, s32 maxCmds) {
     gFontCmdCount = 0;
     memset(gFontSlots, 0, FONT_SLOT_COUNT * sizeof(FontSlot));
     boot = gCommonRes->boot;
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement tail (fragment 0x3BFD30, entered from 0x23A160) binds all seven
+       font slots the game allocates (FONT_SLOT_COUNT) from boot[1..7], not only the first two. */
+    {
+        s32 i;
+
+        for (i = 0; i < FONT_SLOT_COUNT; i++) {
+            Font_SetFont(i, (FontData *)(boot + (boot[1 + i] >> 2)));
+        }
+    }
+#else
     Font_SetFont(0, (FontData *)(boot + (boot[1] >> 2)));
     Font_SetFont(1, (FontData *)(boot + (boot[2] >> 2)));
+#endif
 }
 
 /* Frees everything Font_InitEx allocated. */
