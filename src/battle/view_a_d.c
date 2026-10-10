@@ -189,7 +189,9 @@ s32 ChrView_StepLoad(ChrViewJob *job) {
         if (job->slot == NULL) {
             return 1;
         }
-        BtlRes_LoadSingle(0, &job->slot->file, file);
+        /* &slot->file is a ChrViewFile[3]; both callees read it as the first 0x30 bytes of a
+           BtlResSlot (see the note on ChrViewSlot in battle/view_a.h). */
+        BtlRes_LoadSingle(0, (BtlResSlot *)&job->slot->file, file);
         job->state++;
         break;
     case 2:
