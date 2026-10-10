@@ -381,8 +381,16 @@ void CharSel_Init(s32 section) {
     s32 stageRows;
     void *data;
 
+#ifdef BT3_MOD_DBZT4
+    /* The mod's struct carries the relation tables at its end (bt4_links.c), so it asks for
+       sizeof(CharSel) instead of the 0x3A4C the original build allocates. */
+    gCharSel = Heap_Alloc(sizeof(CharSel), 0x20, 0, 2);
+    memset(gCharSel, 0, sizeof(CharSel));
+    Bt4_CharSel_InitLinks(gCharSel);
+#else
     gCharSel = Heap_Alloc(0x3A4C, 0x20, 0, 2);
     memset(gCharSel, 0, 0x3A4C);
+#endif
     if (gProgress->mode == 0x2D) {
         gCharSel->pack = (u32 *)MPACK_AT(gMenuArc6, section);
         gCharSel->res = Sprite_Unpack(gCharSel->pack, NULL, NULL);
