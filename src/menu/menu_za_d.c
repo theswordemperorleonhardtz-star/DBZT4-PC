@@ -288,7 +288,12 @@ void ReplayMenu_Init(s32 section) {
     RP_RES(2, REPLAY_HOST "dc_replay_tex_plate_PS2_.dbt");
     gReplayMenu->tex[19] = MTEX(res, 0);
     gReplayMenu->chips = (u32 *)ReplayMenu_Section(8, REPLAY_HOST "chara_chip_PS2_.pak");
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replay chip pack holds one texture list per grid id (0xA5 -> 296). */
+    for (i = 0; i < 296; i++) {
+#else
     for (i = 0; i < 0xA5; i++) {
+#endif
         res = (MTexRes *)MPACK_AT(gReplayMenu->chips, i + 1);
         Res_RelocateOffsets(&res, res, res);
     }

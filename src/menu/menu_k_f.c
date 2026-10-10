@@ -190,7 +190,12 @@ void Bracket_Load(LBracket *b) {
     b->nameText = MPACK_AT(b->res, 21);
     b->formText = MPACK_AT(b->res, 22);
     b->chips = (u32 *)MPACK_AT(b->res, 23);
+#ifdef BT3_MOD_DBZT4
+    /* The mod's bracket chip pack holds one texture list per grid id (165 -> 296). */
+    for (i = 0; i < 296; i++) {
+#else
     for (i = 0; i < LCHR_CELL_MAX; i++) {
+#endif
         res = (MTexRes *)MPACK_AT(b->chips, i + 1);
         Res_RelocateOffsets(&res, res, res);
     }
