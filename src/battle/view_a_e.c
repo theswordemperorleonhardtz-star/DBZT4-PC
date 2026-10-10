@@ -3,6 +3,11 @@
 #include "sys/heap.h"
 #include "sys/rand.h"
 #include "sys/save.h"
+#ifdef BT3_MOD_DBZT4
+/* The mod's added characters start at this id (0xA1..0xA9 = 161..169 are its reserved slots,
+   which the cursor skips; DBZQ's ChrGrid_* replacements use the same 170 boundary). */
+#define BT4_CHRGRID_ID_NEW 170
+#endif
 
 /*
  * Progress_Init, the menu helpers and the head of the text box module, 0x25DE68..0x2600B0. See battle/view_a.h.
@@ -567,6 +572,11 @@ s32 ChrGrid_MoveRight(ChrGridCell *cells, s32 *col, s32 row) {
         if (id == CHRGRID_ID_CUSTOM) {
             goto end;
         }
+#ifdef BT3_MOD_DBZT4
+        if (id >= BT4_CHRGRID_ID_NEW) { /* the mod's added characters are selectable too */
+            break;
+        }
+#endif
     }
 end:
     return ok;
@@ -594,6 +604,11 @@ s32 ChrGrid_MoveLeft(ChrGridCell *cells, s32 *col, s32 row) {
         if (id == CHRGRID_ID_CUSTOM) {
             goto end;
         }
+#ifdef BT3_MOD_DBZT4
+        if (id >= BT4_CHRGRID_ID_NEW) { /* the mod's added characters are selectable too */
+            break;
+        }
+#endif
     }
 end:
     return ok;
@@ -649,7 +664,11 @@ void ChrGrid_NextForm(s32 *forms, s32 *index) {
         if (start == *index) {
             break;
         }
+#ifdef BT3_MOD_DBZT4
+    } while (forms[*index] >= CHRGRID_ID_RANDOM && forms[*index] < BT4_CHRGRID_ID_NEW);
+#else
     } while (forms[*index] >= CHRGRID_ID_RANDOM);
+#endif
 }
 
 /* Steps to the previous form of a cell that is a character, wrapping in the seven slots. */
@@ -664,7 +683,11 @@ void ChrGrid_PrevForm(s32 *forms, s32 *index) {
         if (start == *index) {
             break;
         }
+#ifdef BT3_MOD_DBZT4
+    } while (forms[*index] >= CHRGRID_ID_RANDOM && forms[*index] < BT4_CHRGRID_ID_NEW);
+#else
     } while (forms[*index] >= CHRGRID_ID_RANDOM);
+#endif
 }
 
 /* Puts the cursor on a character if it is on a marker cell: right in the row first, then down.
