@@ -541,8 +541,9 @@ static s32 Bt4_CharaSlot(s32 chara) {
     return (chara >= 165 ? chara - 9 : chara) * BT4_CHARA_STRIDE;
 }
 
-/* Size in bytes of one file of a partition, waited for as File_LoadSyncEx waits. */
-static u32 Bt4_FileSizePt(s32 pt, s32 index) {
+/* Size in bytes of one file of a partition, waited for as File_LoadSyncEx waits.
+   Not static: the menu-side portrait loaders (menu_c_e.c) probe with it too. */
+u32 Bt4_FileSizePt(s32 pt, s32 index) {
     ADXF adxf;
     s32 sectors;
 

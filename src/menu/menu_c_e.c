@@ -195,6 +195,34 @@ void CharSel_SetFormChips(s32 side) {
 }
 
 /* One step of the background loader of the two portraits. */
+
+#ifdef BT3_MOD_DBZT4
+/* The mod's portrait loader (DBZQ 0x3C5A00, reached from CharSel_UpdateFaceLoad): it works from the
+   side's costume (CharSelSide + 0x18) and character (+ 0x6C, times the 40-character stride), probes
+   the archive and falls back to the generic portraits.  The bases 0x1123D / 0x110D5 are the mod's
+   added portrait block (partition-1 index 3565 / 3397).  The disassembly also adds a stale a0 to
+   the base, which would ask for an index far outside the archive -- see the note in
+   worklist/DBZQ_OVERLAY.md; the constant alone is what it means. */
+extern u32 Bt4_FileSizePt(s32 pt, s32 index);   /* btl_obj.c */
+
+s32 Bt4_CharSelFaceFile(s32 side) {
+    CharSelSide *s = gCharSel->side[side];
+    s32 chara = s->chara * 40;
+    s32 base = chara < 165 ? 0x1123D : 0x110D5;
+
+    if (Bt4_FileSizePt(1, base - 66640 + s->colorPlate) != 2048 && chara != 161) {
+        return base + s->colorPlate;
+    }
+    if (chara >= 165 && Bt4_FileSizePt(1, base - 66640) == 2048) {
+        return 1586;
+    }
+    if (chara < 164) {
+        return chara + 1424;
+    }
+    return base;
+}
+#endif
+
 void CharSel_UpdateFaceLoad(void) {
     MTexRes *res;
 
@@ -213,8 +241,14 @@ void CharSel_UpdateFaceLoad(void) {
         break;
     case CHARSEL_LOAD_REQUEST:
         File_CancelRequests();
+#ifdef BT3_MOD_DBZT4
+        /* The mod picks the file through its own helper (DBZQ 0x3C5A00, site 0x342984). */
+        File_Request(Bt4_CharSelFaceFile(gCharSel->faceSide),
+                     gCharSel->faceFile[gCharSel->faceSide], 0x16800);
+#else
         File_Request(gCharSel->side[gCharSel->faceSide]->chara + CHARSEL_FACE_FILE,
                      gCharSel->faceFile[gCharSel->faceSide], 0x16800);
+#endif
         gCharSel->faceState = CHARSEL_LOAD_READ;
         break;
     case CHARSEL_LOAD_READ:
