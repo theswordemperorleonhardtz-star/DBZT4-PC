@@ -9,6 +9,17 @@
 #include "sys/heap.h"
 #include "sys/pad.h"
 
+/* The save names of this build (the header that defines them belongs to the battle sources, which
+   this file does not include; it declares McCardFile_SetNames itself below).  Keep in step with
+   include/battle/stgm_a_b.h. */
+#ifdef BT3_MOD_DBZT4
+#define MC_SAVE_NAME   "DBZT3P"
+#define MC_SAVE_NAME_R "DBZT3PR"
+#else
+#define MC_SAVE_NAME   "DBZT3"
+#define MC_SAVE_NAME_R "DBZT3R"
+#endif
+
 /* One entry of the replay slot list in the progress block (what the replay menu shows). */
 typedef struct McFlowSlotInfo {
     /* 0x00 */ s32 flags;        /* bit 0: the entry was filled in */

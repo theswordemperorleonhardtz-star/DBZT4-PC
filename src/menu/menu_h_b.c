@@ -45,7 +45,7 @@ void CharRef_Draw(void);
    sequence reads as base + slot + costume, exactly like the .extra resource helpers. */
 extern u32 Bt4_FileSizePt(s32 pt, s32 index);   /* btl_obj.c */
 
-s32 Bt4_CharRefImageFile(void) {
+s32 Bt4_CharRefStartFile(void) {
     s32 off = gCharRef->cursor * 40 + gCharRef->costume;
 
     if ((Bt4_FileSizePt(1, off + 3565) ^ 0x800) != 0) {
@@ -134,7 +134,7 @@ void CharRef_Init(s32 section) {
     gCharRef->imageRes = Heap_Alloc(0x20800, 0x20, 0, 2);
 #ifdef BT3_MOD_DBZT4
     /* The mod picks the file through its own helper (DBZQ 0x3C55F8, site 0x356930). */
-    File_LoadSync(Bt4_CharRefImageFile(), gCharRef->imageFile, CHARREF_IMAGE_SIZE);
+    File_LoadSync(Bt4_CharRefStartFile(), gCharRef->imageFile, CHARREF_IMAGE_SIZE);
 #else
     File_LoadSync(CHARREF_IMAGE_FILE, gCharRef->imageFile, CHARREF_IMAGE_SIZE);
 #endif

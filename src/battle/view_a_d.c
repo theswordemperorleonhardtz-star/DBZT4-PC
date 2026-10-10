@@ -36,7 +36,7 @@ typedef struct ChrViewCommon {
 } ChrViewCommon;
 
 extern ChrViewBattleWork *Battle_GetWork(void);
-extern void BtlRes_LoadSingle(s32 fromHeap, void *slot, s32 model);
+/* BtlRes_LoadSingle comes from battle/btl_obj.h (its slot is a BtlResSlot, not a void *). */
 extern s32 BtlObj_Create(s32 type, void *res, s32 active);
 extern u8 *BtlObj_Get(s32 id);
 extern s32 BtlObj_Destroy(s32 id);
