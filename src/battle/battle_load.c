@@ -403,6 +403,12 @@ s32 BtlLoad_StepObject(BtlJob *job) {
  *   - kind 0 plays the animation with BtlObjAnim_PlayAuto instead of BtlObjAnim_PlayModel. */
 extern s32 Bt4_CharaResModel(s32 chara, s32 a1, s32 a2);
 
+/* The mod's flag byte at 0x3C2798 (in its injected section .extra): 0xFF = the BT4 resource
+   ids are used, 0 = fall back to the USA ones.  Its only writer is the DBZQ overlay's
+   BtlSuper_GetThrowChara replacement (DBZQ 0x3C4EDC), which clears it for throw ids >= 256.
+   Ported writers must set this variable; it starts at the disc's value. */
+u8 gBt4ResFlag2798 = 0xFF;
+
 s32 Bt4_BtlLoad_StepObject(BtlJob *job) {
     s32 id;
     s32 ready;
@@ -410,7 +416,10 @@ s32 Bt4_BtlLoad_StepObject(BtlJob *job) {
     switch (job->state) {
     case 0:
         Battle_GetWork()->flags |= BATTLE_FLAG_LOAD_OBJECT;
-        id = Bt4_CharaResModel(job->chara, job->animChara, job->unk1C);
+        id = job->chara + BTL_FILE_OBJECT;
+        if (job->chara < 0x100 || gBt4ResFlag2798 != 0) {
+            id = Bt4_CharaResModel(job->chara, job->animChara, job->unk1C);
+        }
         gBtlLoadHandle = BtlRes_Request(0, id, -1, -1);
         job->state++;
         return 0;
