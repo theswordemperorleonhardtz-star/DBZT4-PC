@@ -1759,11 +1759,21 @@ void BattleSetup_SetRule(s32 screenMode, s32 mode, s32 bgm, s32 timeLimit, s32 a
         }
     }
 #endif
+#ifdef BT3_MOD_DBZT4
+    /* The mod's music list is longer: the "pick a random track" sentinel and the range it draws from
+       are 64 instead of 24 (the two sites BattleSetup_SetRule+0x4c / +0x64). */
+    if (bgm == 64) {
+        rule->bgm = rand() % 64;
+    } else {
+        rule->bgm = bgm;
+    }
+#else
     if (bgm == 24) {
         rule->bgm = rand() % 24;
     } else {
         rule->bgm = bgm;
     }
+#endif
     rule->timeLimit = timeLimit;
     rule->announcer = announcer;
     rule->unk10 = unk10;
