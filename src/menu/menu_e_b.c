@@ -1658,6 +1658,11 @@ f32 TeamSel_Input(s32 *result) {
                         CUR_MEMBER.color = gTeamSel->colorCount[CUR_N] - 1;
                     }
                     TeamSel_ClipGoto(CUR_N + 5, CUR_N, TEAMSEL_CLIP_COLOR_PLATE, "fl_on_start");
+#ifdef BT3_MOD_DBZT4
+                    /* The mod's replacement (DBZQ 0x3C60D4, site 0x34F830) refreshes the side's
+                       portrait after a colour change, before the shared Snd_PlaySe tail. */
+                    TeamSel_RequestFace(CUR_N);
+#endif
                     Snd_PlaySe(1, 0);
                 } else if (gPad[i].gameRepeat & 2) {
                     TeamSel_ClipGoto(CUR_N + 5, CUR_N, TEAMSEL_CLIP_COLOR_PLATE, "fl_off_start");
@@ -1666,6 +1671,10 @@ f32 TeamSel_Input(s32 *result) {
                         CUR_MEMBER.color = 0;
                     }
                     TeamSel_ClipGoto(CUR_N + 5, CUR_N, TEAMSEL_CLIP_COLOR_PLATE, "fl_on_start");
+#ifdef BT3_MOD_DBZT4
+                    /* The mod's replacement (DBZQ 0x3C60D4, site 0x34F910): see the branch above. */
+                    TeamSel_RequestFace(CUR_N);
+#endif
                     Snd_PlaySe(1, 0);
                 } else if (gPad[i].gamePressed & 0x200) {
                     /* the member is complete: fix the character and its item set */
