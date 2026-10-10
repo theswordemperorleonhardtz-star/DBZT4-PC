@@ -651,6 +651,11 @@ void SoloSel_Input(s32 *result) {
             if (SS_CUR.costume >= gSoloSel->colorCount) {
                 SS_CUR.costume = 0;
             }
+#ifdef BT3_MOD_DBZT4
+            /* The mod's replacement (DBZQ 0x3C70B8, site 0x36D948) refreshes the portrait before the
+               plate comes back on, exactly as EntrySel_Input does. */
+            SoloSel_ChangeImage();
+#endif
             SoloSel_ClipGoto(2, 5, "fl_on_start");
             Snd_PlaySe(1, 0);
         } else if (gPad[0].gamePressed & 0x200) {
