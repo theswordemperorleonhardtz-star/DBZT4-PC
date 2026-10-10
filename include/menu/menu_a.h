@@ -5,6 +5,16 @@
 /* The mod appends a per-character relation table (160 records of nine words) to the screens that
    show characters; every such header needs the count, so it lives here (bt4_links.c). */
 #define BT4_LINKS_COUNT 160
+
+/* The mod's stage picture ids (DBZQ 0x3C5468, the synchronous load, and 0x3C54BC, the request; the
+   character- and team-select screens use both).  The disc's own stages 0..0x23 keep the USA id
+   "stage + 925", the three reserved slots 0x24..0x26 share one entry the mod appends, and the newer
+   stages come from the entries past it.  The "stage - 40" is the same 40-entry block shift the
+   .extra resource helpers use: the three sibling functions 0x3C5510/0x3C555C/0x3C55AC are the same
+   code with another constant and end with "add a0,a0,t0" instead of the tool's "add a0,v0,t0". */
+#define BT4_STAGE_PIC_FILE(stage) \
+    ((stage) < 0x24 ? (stage) + 925 : \
+     (stage) < 0x27 ? 0x111C3 : (stage) - 40 + 0x111C3)
 #endif
 
 #include "types.h"

@@ -316,7 +316,12 @@ void CharSel_UpdateStageLoad(void) {
         break;
     case CHARSEL_LOAD_REQUEST:
         File_CancelRequests();
+#ifdef BT3_MOD_DBZT4
+        /* The mod picks the stage picture through its own helper (DBZQ 0x3C54BC, site 0x342C30). */
+        File_Request(BT4_STAGE_PIC_FILE(gCharSel->stage->stage), gCharSel->stageFile, 0x3B800);
+#else
         File_Request(CHARSEL_STAGE_FILE_ID(gCharSel->stage->stage), gCharSel->stageFile, 0x3B800);
+#endif
         gCharSel->stageState = CHARSEL_LOAD_READ;
         break;
     case CHARSEL_LOAD_READ:
@@ -767,7 +772,12 @@ void CharSel_Init(s32 section) {
         gCharSel->tex[i != 0 ? 22 : 23] = MTEX(res, 0);
         gCharSel->side[i]->flags |= CHARSEL_SIDE_FACE_READY;
     }
+#ifdef BT3_MOD_DBZT4
+    /* The mod picks the stage picture through its own helper (DBZQ 0x3C5468, site 0x344400). */
+    File_LoadSync(BT4_STAGE_PIC_FILE(gCharSel->stage->stage), gCharSel->stageFile, 0x3B800);
+#else
     File_LoadSync(CHARSEL_STAGE_FILE_ID(gCharSel->stage->stage), gCharSel->stageFile, 0x3B800);
+#endif
     Sprite_Unpack(gCharSel->stageFile, gCharSel->stageRes[gCharSel->stageBuf], NULL);
     res = gCharSel->stageRes[gCharSel->stageBuf];
     Res_RelocateOffsets(&res, res, res);

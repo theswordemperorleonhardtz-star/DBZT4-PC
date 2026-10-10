@@ -343,7 +343,12 @@ void TeamSel_UpdateStageLoad(void) {
         break;
     case TEAMSEL_LOAD_REQUEST:
         File_CancelRequests();
+#ifdef BT3_MOD_DBZT4
+        /* The mod picks the stage picture through its own helper (DBZQ 0x3C54BC, site 0x349E70). */
+        File_Request(BT4_STAGE_PIC_FILE(gTeamSel->stage->stage), gTeamSel->stageFile, 0x3B800);
+#else
         File_Request(gTeamSel->stage->stage + TS_STAGE_FILE, gTeamSel->stageFile, 0x3B800);
+#endif
         gTeamSel->stageState = TEAMSEL_LOAD_READ;
         break;
     case TEAMSEL_LOAD_READ:
@@ -722,7 +727,12 @@ void TeamSel_Init(s32 section) {
         gTeamSel->tex[i ? 22 : 23] = MTEX(res, 0);
         gTeamSel->side[i]->flags |= TEAMSEL_SIDE_FACE_READY;
     }
+#ifdef BT3_MOD_DBZT4
+    /* The mod picks the stage picture through its own helper (DBZQ 0x3C5468, site 0x34BC14). */
+    File_LoadSync(BT4_STAGE_PIC_FILE(gTeamSel->stage->stage), gTeamSel->stageFile, 0x3B800);
+#else
     File_LoadSync(gTeamSel->stage->stage + TS_STAGE_FILE, gTeamSel->stageFile, 0x3B800);
+#endif
     Sprite_Unpack(gTeamSel->stageFile, gTeamSel->stageRes[gTeamSel->stageBuf], NULL);
     res = gTeamSel->stageRes[gTeamSel->stageBuf];
     Res_RelocateOffsets(&res, res, res);
