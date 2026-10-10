@@ -616,7 +616,16 @@ void *Port_LowAlloc(size_t size) {
 
 void Port_LowFree(void *addr) {
 #if defined(__x86_64__)
-    if (addr != NULL) {
+    /* Only its own blocks. A pointer that came from anywhere else (the game's heap, a value the game built
+       or restored itself) is not freed here: the size in front of it would be read out of foreign memory and
+       the free list link would be written into it, which tears whatever is there. That is what showed up as a
+       battle that crashed seconds after a file was closed (the block header of the game's heap was overwritten
+       with a pointer). A block that is not ours is left alone; the game's heap has its own Heap_Free. */
+    if (addr == NULL || sLowArena == NULL ||
+        (uint8_t *)addr < sLowArena + 16 || (uint8_t *)addr >= sLowNext) {
+        return;
+    }
+    {
         uint64_t *p = (uint64_t *)addr - 2, total = p[0];
         int i;
         while (__sync_lock_test_and_set(&sLowLock, 1)) {
