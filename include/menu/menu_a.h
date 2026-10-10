@@ -12,6 +12,12 @@
    stages come from the entries past it.  The "stage - 40" is the same 40-entry block shift the
    .extra resource helpers use: the three sibling functions 0x3C5510/0x3C555C/0x3C55AC are the same
    code with another constant and end with "add a0,a0,t0" instead of the tool's "add a0,v0,t0". */
+/* The mod's portrait pickers (DBZQ 0x3C5A00 / 0x3C58F0 / 0x3C5B10): the shared core lives in
+   menu_c_e.c, one wrapper per screen. */
+s32 Bt4_FaceFileFrom(s32 color, s32 chara);
+s32 Bt4_CharSelFaceFile(s32 side);
+s32 Bt4_TeamSelFaceFile(s32 side);
+
 #define BT4_STAGE_PIC_FILE(stage) \
     ((stage) < 0x24 ? (stage) + 925 : \
      (stage) < 0x27 ? 0x111C3 : (stage) - 40 + 0x111C3)

@@ -205,21 +205,31 @@ void CharSel_SetFormChips(s32 side) {
    worklist/DBZQ_OVERLAY.md; the constant alone is what it means. */
 extern u32 Bt4_FileSizePt(s32 pt, s32 index);   /* btl_obj.c */
 
-s32 Bt4_CharSelFaceFile(s32 side) {
-    CharSelSide *s = gCharSel->side[side];
-    s32 chara = s->chara * 40;
-    s32 base = chara < 165 ? 0x1123D : 0x110D5;
+/* Shared core of the mod's portrait pickers: DBZQ 0x3C5A00 (request) and 0x3C58F0 (synchronous
+   load) for the character select use (colorPlate, chara), and 0x3C5B10 for the team select the
+   member's color with the side's character.  The bases 0x1123D / 0x110D5 are the mod's added
+   portrait block (partition-1 index 3565 / 3397) and 1586 and "chara + 1424" are the USA files
+   the mod falls back to. */
+s32 Bt4_FaceFileFrom(s32 color, s32 chara) {
+    s32 slot = chara * 40;
+    s32 base = slot < 165 ? 0x1123D : 0x110D5;
 
-    if (Bt4_FileSizePt(1, base - 66640 + s->colorPlate) != 2048 && chara != 161) {
-        return base + s->colorPlate;
+    if (Bt4_FileSizePt(1, base - 66640 + color) != 2048 && slot != 161) {
+        return base + color;
     }
-    if (chara >= 165 && Bt4_FileSizePt(1, base - 66640) == 2048) {
+    if (slot >= 165 && Bt4_FileSizePt(1, base - 66640) == 2048) {
         return 1586;
     }
-    if (chara < 164) {
-        return chara + 1424;
+    if (slot < 164) {
+        return slot + 1424;
     }
     return base;
+}
+
+s32 Bt4_CharSelFaceFile(s32 side) {
+    CharSelSide *s = gCharSel->side[side];
+
+    return Bt4_FaceFileFrom(s->colorPlate, s->chara);
 }
 #endif
 
@@ -765,7 +775,12 @@ void CharSel_Init(s32 section) {
     gCharSel->stage->bgmPlaying = gCharSel->stage->bgm;
 
     for (i = 0; i < CHARSEL_SIDES; i++) {
-        File_LoadSync(gCharSel->side[i]->chara + CHARSEL_FACE_FILE, gCharSel->faceFile[i], 0x16800);
+    #ifdef BT3_MOD_DBZT4
+    /* The mod picks the file through its own helper (DBZQ 0x3C58F0, site 0x344360). */
+    File_LoadSync(Bt4_CharSelFaceFile(i), gCharSel->faceFile[i], 0x16800);
+#else
+    File_LoadSync(gCharSel->side[i]->chara + CHARSEL_FACE_FILE, gCharSel->faceFile[i], 0x16800);
+#endif
         Sprite_Unpack(gCharSel->faceFile[i], gCharSel->faceRes[i], NULL);
         res = gCharSel->faceRes[i];
         Res_RelocateOffsets(&res, res, res);

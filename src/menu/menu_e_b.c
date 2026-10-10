@@ -445,6 +445,21 @@ void TeamSel_ClipGoto(s32 flash, s32 side, s32 kind, char *label) {
     Res_RelocateOffsets(&res, res, res)
 
 /* Loads and unpacks the screen (section `section` of archive 5), builds the grids and restores the last choices. */
+#ifdef BT3_MOD_DBZT4
+/* See Bt4_FaceFileFrom in menu_c_e.c.  DBZQ 0x3C5B10 with the helper 0x3C6090: the colour of the
+   member the cursor is on -- cur 4, the menu plate, counts as member 0 -- with the side's
+   character. */
+s32 Bt4_TeamSelFaceFile(s32 side) {
+    TeamSelSide *s = gTeamSel->side[side];
+    s32 cur = s->cur;
+
+    if (cur >= 4) {
+        cur = 0;
+    }
+    return Bt4_FaceFileFrom(s->member[cur].color, s->chara);
+}
+#endif
+
 void TeamSel_Init(s32 section) {
     MTexRes *res = NULL;
     s32 i;
@@ -720,7 +735,12 @@ void TeamSel_Init(s32 section) {
         }
     }
     for (i = 0; i < TEAMSEL_SIDES; i++) {
-        File_LoadSync(gTeamSel->side[i]->chara + TS_FACE_FILE, gTeamSel->faceFile[i], 0x16800);
+    #ifdef BT3_MOD_DBZT4
+    /* The mod picks the file through its own helper (DBZQ 0x3C5B10, site 0x34BB70). */
+    File_LoadSync(Bt4_TeamSelFaceFile(i), gTeamSel->faceFile[i], 0x16800);
+#else
+    File_LoadSync(gTeamSel->side[i]->chara + TS_FACE_FILE, gTeamSel->faceFile[i], 0x16800);
+#endif
         Sprite_Unpack(gTeamSel->faceFile[i], gTeamSel->faceRes[i], NULL);
         res = gTeamSel->faceRes[i];
         Res_RelocateOffsets(&res, res, res);
