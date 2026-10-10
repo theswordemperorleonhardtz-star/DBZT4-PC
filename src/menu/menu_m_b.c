@@ -770,6 +770,11 @@ void UbTeamSel_Input(s32 *result) {
                     if (UT_CUR.plate >= gUbTeamSel->plateCount) {
                         UT_CUR.plate = 0;
                     }
+#ifdef BT3_MOD_DBZT4
+                    /* The mod's replacement (DBZQ 0x3C70D0, sites 0x3717A8 and 0x371840) refreshes
+                       the portrait when the plate step is entered, in both branches. */
+                    UbTeamSel_RequestFace();
+#endif
                     UbTeamSel_ClipGoto(3, UBTEAM_CLIP_PLATE, "fl_on_start");
                     gUbTeamSel->colorCount = ChrTbl_WrapCostume(gUbTeamSel->sel->chara, &UT_CUR.color);
                     gUbTeamSel->sel->step = UBTEAM_STEP_PLATE;
@@ -824,6 +829,11 @@ void UbTeamSel_Input(s32 *result) {
                     if (UT_CUR.plate >= gUbTeamSel->plateCount) {
                         UT_CUR.plate = 0;
                     }
+#ifdef BT3_MOD_DBZT4
+                    /* The mod's replacement (DBZQ 0x3C70D0, sites 0x3717A8 and 0x371840) refreshes
+                       the portrait when the plate step is entered, in both branches. */
+                    UbTeamSel_RequestFace();
+#endif
                     UbTeamSel_ClipGoto(3, UBTEAM_CLIP_PLATE, "fl_on_start");
                     gUbTeamSel->colorCount = ChrTbl_WrapCostume(gUbTeamSel->sel->chara, &UT_CUR.color);
                     gUbTeamSel->sel->step = UBTEAM_STEP_PLATE;
