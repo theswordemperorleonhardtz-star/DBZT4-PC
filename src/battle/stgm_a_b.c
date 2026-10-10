@@ -760,17 +760,17 @@ s32 McCard_CheckFiles(s32 port, McCardFile *file) {
 }
 
 /*
- * Fills the names of a save request: the directory "BASLUS-21678<name>" (with two digits appended when `num`
+ * Fills the names of a save request: the directory MC_SAVE_PREFIX "<name>" (with two digits appended when `num`
  * is not negative), the paths of icon.sys, of the icon (three identical entries) and of the data file, which
  * has the directory's own name, and the icon file names for icon.sys. `replay` selects dbzsmr.ico.
  */
 void McCardFile_SetNames(McCardFile *file, char *name, s32 num, s32 unused, s32 replay) {
     if (num >= 0) {
         memset(file->dir, 0, 0x80);
-        sprintf(file->dir, "%s%s%02d", "BASLUS-21678", name, num);
+        sprintf(file->dir, "%s%s%02d", MC_SAVE_PREFIX, name, num);
     } else {
         memset(file->dir, 0, 0x80);
-        sprintf(file->dir, "%s%s", "BASLUS-21678", name);
+        sprintf(file->dir, "%s%s", MC_SAVE_PREFIX, name);
     }
     memset(file->sysPath, 0, 0x80);
     sprintf(file->sysPath, "/%s/icon.sys", file->dir);
@@ -874,7 +874,7 @@ s32 McCard_FindSystemSave(s32 port) {
     case 0:
         gMcCardPort[port].result = 0;
         gMcCardCmd = MCCARD_CMD_FIND;
-        ret = sceMcGetDir(port, 0, "BASLUS-21678DBZT3", 0, -1, NULL);
+        ret = sceMcGetDir(port, 0, MC_SAVE_DIR, 0, -1, NULL);
         gMcCardPort[port].ret = ret;
         if (ret < 0) {
             if (ret == -200) {

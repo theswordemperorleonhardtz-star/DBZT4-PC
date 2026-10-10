@@ -4,6 +4,7 @@
  *
  *     saves/card1/BASLUS-21678DBZT3/...     (the folder is `saves` in the current directory, or $BT3_SAVES)
  *
+ * (the Brazilian build uses BASLUS-21922DBZT3P, see include/battle/stgm_a_b.h, MC_SAVE_DIR)
  * The game's paths ("/BASLUS-21678DBZT3/icon.sys") are used as they are below that folder, so a save made here
  * has the same files as one on a console card (icon.sys, the icon, the data file).
  *

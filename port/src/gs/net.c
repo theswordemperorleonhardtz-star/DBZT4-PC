@@ -631,7 +631,11 @@ static int own_voice_alt(void) {
     FILE *fp;
     int alt = 0;
 
+#ifdef BT3_MOD_DBZT4
+    snprintf(path, sizeof(path), "%s/card1/BASLUS-21922DBZT3P/BASLUS-21922DBZT3P", root);
+#else
     snprintf(path, sizeof(path), "%s/card1/BASLUS-21678DBZT3/BASLUS-21678DBZT3", root);
+#endif
     fp = fopen(path, "rb");
     if (fp != NULL) {
         if (fseek(fp, 0x1608, SEEK_SET) == 0 && fread(w, 1, 4, fp) == 4) {
@@ -974,7 +978,11 @@ static void relaunch(int role, const char *join, int port) {
         }
         SETENV("BT3_SAVES", "net_session");
         /* the session's own save folder starts empty: both sides begin from the game's defaults */
-        remove("net_session/card1/BASLUS-21678DBZT3/BASLUS-21678DBZT3");
+    #ifdef BT3_MOD_DBZT4
+    remove("net_session/card1/BASLUS-21922DBZT3P/BASLUS-21922DBZT3P");
+#else
+    remove("net_session/card1/BASLUS-21678DBZT3/BASLUS-21678DBZT3");
+#endif
         remove("net_session/card1/BASLUS-21678DBZT3/icon.sys");
         remove("net_session/card1/BASLUS-21678DBZT3/dbzsm.ico");
     } else {
@@ -1032,7 +1040,11 @@ void Port_NetSessionBegin(int role, const char *address, int port) {
         snprintf(sSavesBefore, sizeof(sSavesBefore), "%s", saves != NULL ? saves : "");
     }
     /* the session's own save folder starts empty: both sides begin from the game's defaults */
+#ifdef BT3_MOD_DBZT4
+    remove("net_session/card1/BASLUS-21922DBZT3P/BASLUS-21922DBZT3P");
+#else
     remove("net_session/card1/BASLUS-21678DBZT3/BASLUS-21678DBZT3");
+#endif
     remove("net_session/card1/BASLUS-21678DBZT3/icon.sys");
     remove("net_session/card1/BASLUS-21678DBZT3/dbzsm.ico");
     sVoiceAlt = own_voice_alt(); /* (before the save folder changes: it is read from the player's own) */

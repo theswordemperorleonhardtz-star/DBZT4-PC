@@ -43,6 +43,18 @@ typedef struct McCardPort {
 #define MCCARD_CMD_INFO_PROBE 25
 #define MCCARD_CMD_NEED 26
 
+#ifdef BT3_MOD_DBZT4
+/* The Brazilian release keeps its saves in its own directory: the strings of SLUS_219.22 are
+   "BASLUS-21922" (the prefix a request's directory is built from) and "BASLUS-21922DBZT3P" (the
+   directory the game asks for when it looks for a save).  The USA release uses "BASLUS-21678DBZT3"
+   for both.  A save written by this build therefore sits where the mod's own saves do. */
+#define MC_SAVE_PREFIX "BASLUS-21922"
+#define MC_SAVE_DIR    "BASLUS-21922DBZT3P"
+#else
+#define MC_SAVE_PREFIX "BASLUS-21678"
+#define MC_SAVE_DIR    "BASLUS-21678DBZT3"
+#endif
+
 /* One save (a directory on the card with icon.sys, an icon and the data file). */
 typedef struct McCardFile {
     /* 0x000 */ void *icon;          /* icon file image */
