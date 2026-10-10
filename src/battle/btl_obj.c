@@ -453,8 +453,15 @@ void BtlObj_Setup(BtlObj *obj, s32 type, BtlResSlot *res, s32 id, s32 active) {
     BtlObjMdl_Create(type, obj, res);
     obj->active = active;
     obj->id = id;
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (0x3BF6F8): the character comes back out of its 40-strided model
+       id range (base 70173 = 0x1121D) with an unsigned division, and it does not call
+       BtlObj_InitChains (four words nothing reads; see src/battle/bobj_b_b.c). */
+    obj->chara = (s32)(((u32)res->file[0].id - 70173u) / 40u);
+#else
     obj->chara = (res->file[0].id - 0x590) / 10;
     BtlObj_InitChains(obj);
+#endif
 }
 
 /* Creates an object from a loaded model; returns its id or -1 when the table is full. */
@@ -515,10 +522,11 @@ BtlResWork *BtlRes_GetWork(void) {
  * Each first probes the file at the resource's partition-1 index and falls back to a fixed
  * id when the probe reads exactly one sector (2048), which the disc uses as a placeholder.
  *
- * BT4_CHARA_STRIDE: the injected code multiplies the character slot by 40 but never reads
- * the product (no mflo anywhere near it; see EXTRA_SEMANTICS.md), so the shipped disc
- * behaves as stride 1.  Set to 40 if the resource layout is ever confirmed to be strided. */
-#define BT4_CHARA_STRIDE 1
+ * BT4_CHARA_STRIDE: 40.  The injected helpers multiply the character slot by 40; the
+ * disassembly shows no mflo beside that multiply, but BtlObj_Setup's inverse
+ * (model id - 70173) / 40 proves the 40-stride is what the disc uses (a character's model
+ * ids are 40 apart).  See _bt4pc/worklist/EXTRA_SEMANTICS.md. */
+#define BT4_CHARA_STRIDE 40
 #define BT4_RES_MODEL_BASE 70039  /* 0x11197 */
 #define BT4_RES_ANIM0_BASE 70189  /* 0x1122D */
 #define BT4_RES_ANIM1_BASE 70213  /* 0x11235 */

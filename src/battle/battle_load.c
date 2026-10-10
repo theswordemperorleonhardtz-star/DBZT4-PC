@@ -590,7 +590,13 @@ s32 BtlLoad_StepInitial(BtlJob *job) {
         for (side = 0; side < 2; side++) {
             for (i = 0; (u32)i < (u32)BattleSide_GetMemberCount(side); i++) {
                 m = BattleSide_GetMember(side, i);
+#ifdef BT3_MOD_DBZT4
+                /* The mod's replacement (0x3BEAC8) keeps the fighter-parameter files at
+                   (roster-remapped chara) * 2 + side + 1589 (0x635). */
+                m->buf[0] = File_Request3((m->chara >= 165 ? m->chara - 9 : m->chara) * 2 + side + 1589, m->buf[0], BTL_MEMBER_BUF_SIZE);
+#else
                 m->buf[0] = File_Request3(m->chara * 2 + side + BTL_FILE_CHARA_DATA, m->buf[0], BTL_MEMBER_BUF_SIZE);
+#endif
             }
         }
         res->unk8 = File_Request3(gProgress->unk0[0] + 6, NULL, 0);
