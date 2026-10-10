@@ -26,6 +26,16 @@
 #define BTL_STAGE_BANK(stage) ((stage) + BTL_FILE_SND_STAGE)
 #endif
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's stage file ids (DBZQ 0x3C5510 / 0x3C555C / 0x3C55AC): the disc's own stages (id < 0x24)
+   keep the USA ids, and the stages the mod adds come from the entries appended to its archive. The
+   three replacement functions use slightly different bases. Their code also computes a reserved-slot
+   value that the tool then overwrites with the stage itself, so the ids stay linear in the stage. */
+#define BT4_STAGE_CHANGE_FILE(stage) ((stage) < 0x24 ? (stage) + BTL_FILE_STAGE : (stage) + 0x111C1)
+#define BT4_STAGE_RELOAD_FILE(stage) ((stage) < 0x24 ? (stage) + BTL_FILE_STAGE : (stage) + 0x111BF)
+#define BT4_STAGE_BANK_FILE(stage) ((stage) < 0x24 ? (stage) + BTL_FILE_SND_STAGE : (stage) + 0x111AD)
+#endif
+
 /*
  * Battle loader, result block, events, battle setup and replay block: 0x127120..0x12B570, one object file in
  * the original (its .rodata only lines up as one object: the jump table of BtlLoad_StepStageChange at +0, the
@@ -208,7 +218,12 @@ s32 BtlLoad_StepStageReload(BtlJob *job) {
         break;
     case 1:
         BtlLoad_BeginStageSwap();
-#ifdef PORT
+#ifdef BT3_MOD_DBZT4
+        /* The mod's replacement (DBZQ 0x3C555C, site 0x127368). */
+        if (Battle_GetStage() >= 0x24) {
+            id = BT4_STAGE_RELOAD_FILE(Battle_GetStage());
+        } else
+#elif defined(PORT)
         /* PC build: a stage added from outside the disc (id 0x24 on) has one model only, and the file id its
            split-screen model would have belongs to other files (the menu archives, the stage transitions): it
            is loaded for split screen too. The disc's own stages keep their lighter split-screen model. */
@@ -278,7 +293,12 @@ s32 BtlLoad_StepStageChange(BtlJob *job) {
         job->state++;
         return 0;
     case 4:
+#ifdef BT3_MOD_DBZT4
+        /* The mod's replacement (DBZQ 0x3C5510, site 0x127518). */
+        res->stage = File_Request3(BT4_STAGE_CHANGE_FILE(Battle_GetStage()), res->stage, res->stageSize);
+#else
         res->stage = File_Request3(BTL_STAGE_MODEL(Battle_GetStage()), res->stage, res->stageSize);
+#endif
         res->bank = File_Request3(BTL_STAGE_BANK(Battle_GetStage()), res->bank, res->bankSize);
         job->state++;
         return 0;
@@ -677,7 +697,12 @@ s32 BtlLoad_StepInitial(BtlJob *job) {
     switch (job->state) {
     case 0:
         res->sndCommon = File_Request3(BTL_FILE_SND_COMMON, NULL, 0);
+#ifdef BT3_MOD_DBZT4
+        /* The mod's replacement (DBZQ 0x3C55AC, site 0x127CF8). */
+        res->sndStage = File_Request3(BT4_STAGE_BANK_FILE(Battle_GetStartStage()), NULL, 0);
+#else
         res->sndStage = File_Request3(BTL_STAGE_BANK(Battle_GetStartStage()), NULL, 0);
+#endif
         res->sndChara[0] = File_Request3(BT4_VOICE_BANK(BattleSide_GetStartChara(0)), NULL, 0);
         res->sndChara[1] = File_Request3(BT4_VOICE_BANK(BattleSide_GetStartChara(1)), NULL, 0);
         job->state++;
@@ -753,7 +778,12 @@ s32 BtlLoad_StepInitial(BtlJob *job) {
                 memset(m->buf[1], 0, BTL_MEMBER_BUF_SIZE);
             }
         }
-#ifdef PORT
+#ifdef BT3_MOD_DBZT4
+        /* The mod's replacement (DBZQ 0x3C555C, site 0x127FC4). */
+        if (Battle_GetStartStage() >= 0x24) {
+            id = BT4_STAGE_RELOAD_FILE(Battle_GetStartStage());
+        } else
+#elif defined(PORT)
         /* PC build: see the note in the stage-swap job: an added stage has one model, for split screen too. */
         if (Battle_GetStartStage() >= 0x24) {
             id = BTL_STAGE_MODEL(Battle_GetStartStage());
