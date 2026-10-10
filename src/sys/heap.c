@@ -181,17 +181,20 @@ HeapBlock *Heap_FindFreeFromTail(s32 heap, s32 size) {
        python3 _bt4pc/tools/symbolize.py bt3.exe.map <the crash report>
    Off unless the variable is set, so a normal run pays nothing. */
 static int gHeapCheckOn = -1;
-static const void *gHeapLastOk;
-static const char *gHeapLastWhat = "start";
+/* The last few operations, with their caller and its caller: the tear happens between two of them,
+   and the culprit is the game code that ran in between, so the sequence names it. */
+#define HEAP_HIST 8
+static struct { const char *what; const void *c0; const void *c1; } gHeapHist[HEAP_HIST];
+static int gHeapHistAt;
+static int gHeapHistHave;
 
-static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 fromTail, const void *ret) {
+static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 fromTail, const void *ret,
+                          const void *caller1) {
     s32 h;
 
     if (heap != HEAP_ANY && (heap < 0 || heap >= HEAP_COUNT)) {
-        fprintf(stderr,
-                "bt3: HEAP ID OUT OF RANGE: %s asked for heap %d (0..%d) size=%d align=%u tail=%d, called from %p;"
-                " the last operation that was still fine: %s (called from %p)\n",
-                what, (int)heap, (int)(HEAP_COUNT - 1), (int)size, align, (int)fromTail, ret, gHeapLastWhat, gHeapLastOk);
+        fprintf(stderr, "bt3: HEAP ID OUT OF RANGE: %s asked for heap %d (0..%d, or %d for any)\n",
+                what, (int)heap, (int)(HEAP_COUNT - 1), (int)HEAP_ANY);
         fflush(stderr);
         exit(3);
     }
@@ -204,18 +207,29 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
         while (block != NULL) {
             if ((u8 *)block < lo || (u8 *)block + 0x20 > hi || block->magic != HEAP_MAGIC ||
                 block->size < 0x20 || block->size > (s32)(hi - (u8 *)block) || ++guard > 200000) {
+                int k;
                 fprintf(stderr,
-                        "bt3: HEAP BROKEN in heap %d: %s (heap=%d size=%d align=%u tail=%d, called from %p);"
-                        " the last operation that was still fine: %s (called from %p)\n",
-                        (int)h, what, (int)heap, (int)size, align, (int)fromTail, ret, gHeapLastWhat, gHeapLastOk);
+                        "bt3: HEAP BROKEN in heap %d: %s (heap=%d size=%d align=%u tail=%d)\n",
+                        (int)h, what, (int)heap, (int)size, align, (int)fromTail);
+                fprintf(stderr, "bt3: the last %d heap operations, oldest first (caller, and its caller):\n",
+                        gHeapHistHave);
+                for (k = 0; k < gHeapHistHave; k++) {
+                    int j = (gHeapHistAt - gHeapHistHave + k + HEAP_HIST * 2) % HEAP_HIST;
+                    fprintf(stderr, "bt3:   %-12s %p  %p\n", gHeapHist[j].what, gHeapHist[j].c0, gHeapHist[j].c1);
+                }
                 fflush(stderr);
                 exit(3);
             }
             block = Heap_NextBlock(block);
         }
     }
-    gHeapLastOk = ret;
-    gHeapLastWhat = what;
+    gHeapHist[gHeapHistAt].what = what;
+    gHeapHist[gHeapHistAt].c0 = ret;
+    gHeapHist[gHeapHistAt].c1 = caller1;
+    gHeapHistAt = (gHeapHistAt + 1) % HEAP_HIST;
+    if (gHeapHistHave < HEAP_HIST) {
+        gHeapHistHave++;
+    }
 }
 
 #define HEAP_CHECK(tag, heap, size, align, tail, ret) do { \
@@ -223,7 +237,10 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
             gHeapCheckOn = getenv("BT3_HEAP_CHECK") != NULL; \
             if (gHeapCheckOn) { fprintf(stderr, "bt3: heap check on (every allocation and free)\n"); fflush(stderr); } \
         } \
-        if (gHeapCheckOn) { Heap_CheckAll((tag), (heap), (size), (align), (tail), (const void *)(ret)); } \
+        if (gHeapCheckOn) { \
+            Heap_CheckAll((tag), (heap), (size), (align), (tail), (const void *)(ret), \
+                          __builtin_return_address(1)); \
+        } \
     } while (0)
 #else
 #define HEAP_CHECK(tag, heap, size, align, tail, ret) do { } while (0)
