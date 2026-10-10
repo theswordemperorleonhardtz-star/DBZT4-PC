@@ -496,6 +496,108 @@ s32 BtlLoad_StepChara(BtlJob *job) {
     return 0;
 }
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's replacement for BtlLoad_StepChara (injected function 0x3BF128), which its
+ * BtlLoad_PollCharaRequest and BtlLoad_Reload install as the job step.  It differs from the
+ * USA one in exactly four id computations (see _bt4pc/worklist/EXTRA_SEMANTICS.md):
+ *   model : Bt4_CharaResModel(chara, costume, variant) instead of chara * 10 + costume + 0x590/0x594
+ *   anim  : Bt4_CharaResAnim0/1(animChara/unk1C, costume) instead of n * 10 + 0x598/0x599
+ *   voice : voiceChara + (voiceChara >= 166 ? 2450 : 2459) instead of the save's voice flag + 0xBDA/0xC7B
+ *   data  : (chara >= 166 ? chara - 9 : chara) * 2 + side + 1589 instead of chara * 2 + side + 8 */
+extern s32 Bt4_CharaResModel(s32 chara, s32 a1, s32 a2);
+extern s32 Bt4_CharaResAnim0(s32 chara, s32 a1);
+extern s32 Bt4_CharaResAnim1(s32 chara, s32 a1);
+
+s32 Bt4_BtlLoad_StepChara(BtlJob *job) {
+    BattleRes *res = BATTLE_RES;
+    s32 model;
+    s32 voice;
+    s32 file8;
+    s32 file9;
+    s32 member;
+    s32 ready;
+    BattleMember *m;
+
+    switch (job->state) {
+    case 0:
+        model = Bt4_CharaResModel(job->chara, job->costume, job->variant);
+        if (job->modelOnly == 0) {
+            voice = job->voiceChara + (job->voiceChara >= 166 ? 2450 : 2459);
+            file8 = Bt4_CharaResAnim0(job->animChara, job->costume);
+            file9 = Bt4_CharaResAnim1(job->unk1C, job->costume);
+            BtlRes_Reload(BattleSide_GetModelSlot(job->side), model, file8, file9);
+            res->bank = File_Request3(voice, res->bank, res->bankSize);
+            if (!BtlCtrl_IsSwitching(job->side)) {
+                BattleMember *next;
+                s32 c;
+
+                member = 0;
+                if (job->initial != 0) {
+                    member = BtlSide_GetActiveMember(job->side);
+                }
+                next = BattleSide_GetMember(job->side, member);
+                c = job->chara >= 166 ? job->chara - 9 : job->chara;
+                next->buf[1] = File_Request3(c * 2 + job->side + 1589, next->buf[1], BTL_MEMBER_BUF_SIZE);
+            }
+        } else {
+            BtlRes_Reload(BattleSide_GetModelSlot(job->side), model, -1, -1);
+        }
+        Battle_GetWork()->flags |= BATTLE_FLAG_LOAD_CHARA;
+        job->state++;
+        break;
+    case 1:
+        if (!File_UpdateRequests()) {
+            return 0;
+        }
+        if (job->kind == BTL_JOB_KIND_CHANGE) {
+            BtlChange_NotifyLoaded();
+        }
+        job->state++;
+        break;
+    case 2:
+        ready = 1;
+        if (job->kind == BTL_JOB_KIND_CHANGE) {
+            ready = BtlChange_IsReady();
+        }
+        if (!ready) {
+            break;
+        }
+        job->state++;
+        BtlRes_CommitReload2();
+        if (job->modelOnly == 0) {
+            if (job->side == 0) {
+                Snd_ReloadBank(0x10, res->bank, 0);
+            } else {
+                Snd_ReloadBank(0x20, res->bank, 0);
+            }
+        }
+        BtlObj_Rebind(BattleSide_GetObjId(job->side), BattleSide_GetModelSlot(job->side));
+        if (job->kind == 0) {
+            BtlObjAnim_PlayAuto(BtlObj_Get(BattleSide_GetObjId(job->side)), 0, 2);
+        } else if (job->kind == BTL_JOB_KIND_CHANGE) {
+            BtlChars_OnModelLoaded(job->side);
+        }
+        if (job->modelOnly == 0) {
+            BtlAiMgr_ResetSide(job->side);
+            BtlScene_CreateChar(job->side);
+            if (!BtlCtrl_IsSwitching(job->side)) {
+                m = BattleSide_GetMember(job->side, BtlSide_GetActiveMember(job->side));
+                if (m != NULL) {
+                    Res_RelocateOffsets(&m->buf[1], m->buf[1], m->buf[1]);
+                    m->data = m->buf[1];
+                }
+            }
+        }
+        BtlJob_Free(job);
+        Battle_GetWork()->flags &= ~BATTLE_FLAG_LOAD_CHARA;
+        return 1;
+    default:
+        return 1;
+    }
+    return 0;
+}
+#endif
+
 /* Job: the first load of a battle. */
 s32 BtlLoad_StepInitial(BtlJob *job) {
     BattleRes *res = BATTLE_RES;
@@ -738,7 +840,11 @@ void BtlLoad_PollCharaRequest(void) {
             memset(job, 0, sizeof(BtlJob));
             job->side = side;
             job->kind = BTL_JOB_KIND_CHANGE;
+#ifdef BT3_MOD_DBZT4
+            job->step = Bt4_BtlLoad_StepChara;
+#else
             job->step = BtlLoad_StepChara;
+#endif
             job->chara = chara;
             job->animChara = animChara;
             job->unk1C = unk1C;
@@ -786,7 +892,11 @@ void BtlLoad_Reload(void) {
             BattleSide_SetForm(side, chara, costume, variant);
             job = BtlJob_Alloc();
             memset(job, 0, sizeof(BtlJob));
+#ifdef BT3_MOD_DBZT4
+            job->step = Bt4_BtlLoad_StepChara;
+#else
             job->step = BtlLoad_StepChara;
+#endif
             job->side = side;
             job->kind = BTL_JOB_KIND_RESTART;
             job->chara = chara;
