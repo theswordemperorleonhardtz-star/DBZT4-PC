@@ -57,6 +57,15 @@ extern s32 gBtlLoadObj;    /* object made from it */
  * buffer size as a third argument, so the calls go through a cast. */
 #define File_Request3(id, buf, size) ((void *(*)(s32, void *, s32))File_Request)(id, buf, size)
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's replacement for the two initial voice banks (fragment 0x3BEB00): the character is
+ * remapped (>= 164 -> -9) and the banks moved from BTL_FILE_VOICE / BTL_FILE_VOICE_ALT to
+ * 2163 (0x873) / 2459 (0x99B). */
+#define BT4_VOICE_BANK(chara) (((chara) >= 164 ? (chara) - 9 : (chara)) + ((gSaveData->flags & SAVE_FLAG_VOICE) ? 2459 : 2163))
+#else
+#define BT4_VOICE_BANK(chara) ((chara) + ((gSaveData->flags & SAVE_FLAG_VOICE) ? BTL_FILE_VOICE_ALT : BTL_FILE_VOICE))
+#endif
+
 extern void Fade_Start(s32 idx, s32 dir, f32 seconds);
 extern s32 Fade_IsDone(s32 idx);
 extern void Snd_LoadBank(s32 mask, void *data, s32 arg);
@@ -500,8 +509,8 @@ s32 BtlLoad_StepInitial(BtlJob *job) {
     case 0:
         res->sndCommon = File_Request3(BTL_FILE_SND_COMMON, NULL, 0);
         res->sndStage = File_Request3(BTL_STAGE_BANK(Battle_GetStartStage()), NULL, 0);
-        res->sndChara[0] = File_Request3(BattleSide_GetStartChara(0) + ((gSaveData->flags & SAVE_FLAG_VOICE) ? BTL_FILE_VOICE_ALT : BTL_FILE_VOICE), NULL, 0);
-        res->sndChara[1] = File_Request3(BattleSide_GetStartChara(1) + ((gSaveData->flags & SAVE_FLAG_VOICE) ? BTL_FILE_VOICE_ALT : BTL_FILE_VOICE), NULL, 0);
+        res->sndChara[0] = File_Request3(BT4_VOICE_BANK(BattleSide_GetStartChara(0)), NULL, 0);
+        res->sndChara[1] = File_Request3(BT4_VOICE_BANK(BattleSide_GetStartChara(1)), NULL, 0);
         job->state++;
         return 0;
     case 1:
