@@ -803,8 +803,17 @@ void Bracket_UpdateImages(LBracket *b) {
         chara[0] = b->entrant[b->match_[b->match].ent[0]].chara;
         chara[1] = b->entrant[b->match_[b->match].ent[1]].chara;
         File_CancelRequests();
+#ifdef BT3_MOD_DBZT4
+        /* The mod picks the two portraits through its own helper (DBZQ 0x3C6748, sites 0x36A314 /
+           0x36A32C): the same character ids, but from the block the mod appends.  Its helper reads
+           the id out of brackets own tables and the tool then adds gBracket to the base, which
+           cannot be an id; the constant alone is what it means, as in the other loaders. */
+        File_Request(Bt4_FaceFileFrom(0, chara[0]), b->imageFile[0], 0x16800);
+        File_Request(Bt4_FaceFileFrom(0, chara[1]), b->imageFile[1], 0x16800);
+#else
         File_Request(chara[0] + 0x2F9, b->imageFile[0], 0x16800);
         File_Request(chara[1] + 0x2F9, b->imageFile[1], 0x16800);
+#endif
         b->loadState = LBRK_LOAD_READ;
         break;
     case LBRK_LOAD_READ:
@@ -836,8 +845,14 @@ void Bracket_LoadImages(LBracket *b) {
     memset(p, 0, 8);
     chara[0] = b->entrant[b->match_[b->match].ent[0]].chara;
     chara[1] = b->entrant[b->match_[b->match].ent[1]].chara;
+#ifdef BT3_MOD_DBZT4
+    /* The mod loads through its own helper (DBZQ 0x3C6638, sites 0x36A468 / 0x36A480); see above. */
+    File_LoadSync(Bt4_FaceFileFrom(0, chara[0]), b->imageFile[0], 0x16800);
+    File_LoadSync(Bt4_FaceFileFrom(0, chara[1]), b->imageFile[1], 0x16800);
+#else
     File_LoadSync(chara[0] + 0x2F9, b->imageFile[0], 0x16800);
     File_LoadSync(chara[1] + 0x2F9, b->imageFile[1], 0x16800);
+#endif
     Sprite_Unpack(b->imageFile[0], b->imageRes[0], NULL);
     Sprite_Unpack(b->imageFile[1], b->imageRes[1], NULL);
     res = b->imageRes[0];
