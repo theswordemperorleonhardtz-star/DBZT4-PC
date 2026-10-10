@@ -216,7 +216,12 @@ void SoloSel_Init(s32 section) {
     gSoloSel->nameText = MPACK_AT(gSoloSel->res, 28);
     gSoloSel->formText = MPACK_AT(gSoloSel->res, 29);
     gSoloSel->chips = (u32 *)MPACK_AT(gSoloSel->res, 27);
+#ifdef BT3_MOD_DBZT4
+    /* The mod's chip pack holds one texture list per grid id (165 -> 296). */
+    for (i = 0; i < 296; i++) {
+#else
     for (i = 0; i < LCHR_CELL_MAX; i++) {
+#endif
         res = (MTexRes *)MPACK_AT(gSoloSel->chips, i + 1);
         Res_RelocateOffsets(&res, res, res);
     }

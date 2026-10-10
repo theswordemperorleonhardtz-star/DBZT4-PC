@@ -376,7 +376,12 @@ void UbTeamSel_Init(s32 section) {
     gUbTeamSel->nameText = MPACK_AT(gUbTeamSel->res, 28);
     gUbTeamSel->formText = MPACK_AT(gUbTeamSel->res, 29);
     gUbTeamSel->chips = (u32 *)MPACK_AT(gUbTeamSel->res, 27);
+#ifdef BT3_MOD_DBZT4
+    /* The mod's chip pack holds one texture list per grid id (165 -> 296). */
+    for (i = 0; i < 296; i++) {
+#else
     for (i = 0; i < UB_CELL_MAX; i++) {
+#endif
         res = (MTexRes *)MPACK_AT(gUbTeamSel->chips, i + 1);
         Res_RelocateOffsets(&res, res, res);
     }
