@@ -21,7 +21,13 @@ Title *gTitle = NULL;
 
 /* Counts an idle frame; at the limit leaves with result 1 (attract demo set up) or 2 (opening movie). */
 void Title_Idle(s32 *result) {
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (site 0x336FE8) waits 8133 idle frames instead of the USA 1800
+       before it leaves for the attract demo. */
+    if (++gTitle->idle > 8133) {
+#else
     if (++gTitle->idle > TITLE_IDLE_FRAMES) {
+#endif
         gTitle->idle = 0;
         TITLE_LEAVE();
         switch (gProgress->demoCount) {
