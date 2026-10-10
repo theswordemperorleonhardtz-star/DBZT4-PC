@@ -10,7 +10,14 @@
  * "How we know" is given per field; "menu" means the DBZP.BIN overlay (asm/dbzp/000000.s).
  */
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's save block is 24960 bytes (0x6180) instead of 16384: the characters it adds need more
+   room.  Every reader / writer of the block uses this size (Save_Init, Save_SetDefaults, the
+   memory-card flow in src/sys/mcflow_a.c), and the mod's Save_Init asks for 24960 as well. */
+#define SAVE_SIZE 0x6180
+#else
 #define SAVE_SIZE 0x4000
+#endif
 
 #define SAVE_CHARA_COUNT 161  /* bits in charaBits (ids 0..160; 161..164 are list markers in ChrGrid_Build) */
 #define SAVE_CHARA_WORDS 3

@@ -103,6 +103,21 @@ s32 ChrTbl_IsRelated(s32 a, s32 b) {
 }
 
 /* CPU level of a difficulty setting 0..4. */
+#ifdef BT3_MOD_DBZT4
+/* The mod rebalances the curve: easy..very hard give 0, 30, 50, 80, 100 instead of 0, 6, 13, 21, 29
+   (the four sites are CpuLevel_FromSetting+0x1c/0x24/0x2c/0x30).  The inverse below is NOT changed
+   by the mod, so it still uses the original thresholds. */
+#define BT4_CPU_LEVEL_1 30
+#define BT4_CPU_LEVEL_2 50
+#define BT4_CPU_LEVEL_3 80
+#define BT4_CPU_LEVEL_4 100
+#else
+#define BT4_CPU_LEVEL_1 6
+#define BT4_CPU_LEVEL_2 13
+#define BT4_CPU_LEVEL_3 21
+#define BT4_CPU_LEVEL_4 29
+#endif
+
 s32 CpuLevel_FromSetting(u32 setting) {
     s32 level = 0;
 
@@ -111,16 +126,16 @@ s32 CpuLevel_FromSetting(u32 setting) {
         level = 0;
         break;
     case 1:
-        level = 6;
+        level = BT4_CPU_LEVEL_1;
         break;
     case 2:
-        level = 13;
+        level = BT4_CPU_LEVEL_2;
         break;
     case 3:
-        level = 21;
+        level = BT4_CPU_LEVEL_3;
         break;
     case 4:
-        level = 29;
+        level = BT4_CPU_LEVEL_4;
         break;
     }
     return level;
