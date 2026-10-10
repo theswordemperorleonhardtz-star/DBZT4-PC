@@ -12,6 +12,7 @@
  *   0x70000000              the 16 KB scratchpad.
  */
 #include "port_host.h"
+#include "bt4_mod.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -291,7 +292,7 @@ static void Port_LoadGameData(void) {
            settings are next to it. If there is no gamedata here but there is next to the program, work there. */
         char dir[1024], probe[1200];
         char *slash;
-        FILE *here = fopen("gamedata/disc/SLUS_216.78", "rb");
+        FILE *here = fopen("gamedata/disc/" BT4_MAIN_ELF, "rb");
         if (here != NULL) {
             fclose(here);
         } else {
@@ -304,7 +305,7 @@ static void Port_LoadGameData(void) {
 #endif
             if (slash != NULL) {
                 *slash = '\0';
-                snprintf(probe, sizeof(probe), "%s/gamedata/disc/SLUS_216.78", dir);
+                snprintf(probe, sizeof(probe), "%s/gamedata/disc/" BT4_MAIN_ELF, dir);
                 here = fopen(probe, "rb");
                 if (here != NULL) {
                     fclose(here);
@@ -333,7 +334,7 @@ static void Port_LoadGameData(void) {
     if (listSize < 16 + (size_t)count * 16) {
         data_fail("damaged file", path);
     }
-    snprintf(path, sizeof(path), "%s/disc/SLUS_216.78", root);
+    snprintf(path, sizeof(path), "%s/disc/" BT4_MAIN_ELF, root);
     elf = read_file(path, &elfSize);
     if (elf == NULL || elfSize < 0x34 || memcmp(elf, "\177ELF", 4) != 0) {
         data_fail("the game's program was not found", path);

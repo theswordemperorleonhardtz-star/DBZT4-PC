@@ -28,7 +28,7 @@ def main():
     out = pathlib.Path(sys.argv[2] if len(sys.argv) > 2 else "gamedata")
     disc = out / "disc"
     disc.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["7z", "x", "-y", f"-o{disc}", iso, "DATA", "BIN", "SLUS_216.78"], check=True,
+    subprocess.run(["7z", "x", "-y", f"-o{disc}", iso, "DATA", "BIN", "SLUS_219.22"], check=True,
                    stdout=subprocess.DEVNULL)
     for afs in sorted((disc / "DATA").glob("*.AFS")):
         n = split_afs(afs, out / afs.stem.lower())

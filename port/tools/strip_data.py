@@ -15,7 +15,9 @@ distance between program address and PS2 address; every run of bytes equal to th
 address is game data. Bytes that differ are addresses the linker filled in (they belong to this build, not to the
 game) and stay. The list contains no game data, only numbers.
 Sources: 0 = SLUS_216.78 as a flat image from 0x100000, 1 = BIN/DBZP.BIN (loaded at 0x334C00 on the PS2)."""
-import argparse, pathlib, re, struct, subprocess, sys
+import argparse, os, pathlib, re, struct, subprocess, sys
+
+MAIN_ELF = os.environ.get("BT3_MAIN_ELF", "SLUS_219.22")  # Brazilian DBZT4 1.8 (V2) main program
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import toolchain
 from toolchain import ROOT, PREFIX
@@ -47,7 +49,7 @@ def main():
     a = ap.parse_args()
     exe = pathlib.Path(a.exe)
     image = bytearray(exe.read_bytes())
-    src = [flat_image(pathlib.Path(a.data) / "disc/SLUS_216.78"), (pathlib.Path(a.data) / "disc/BIN/DBZP.BIN").read_bytes()]
+    src = [flat_image(pathlib.Path(a.data) / "disc" / MAIN_ELF), (pathlib.Path(a.data) / "disc/BIN/DBZP.BIN").read_bytes()]
     base = [ROM_BASE, DBZP_BASE]
     # loaded sections of the program: address -> file offset
     secs = []

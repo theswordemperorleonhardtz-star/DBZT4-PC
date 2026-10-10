@@ -13,6 +13,7 @@ Output: port/build/gen/data/*.s and the assembled port/build/obj_data/*.o  (gene
 import argparse, collections, pathlib, re
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
+MAIN_YAML = "config/SLUS_219.22.yaml"  # Brazilian DBZT4 1.8 (V2); "config/SLUS_216.78.yaml" for the USA release
 KINDS = ("data", "sdata", "rodata", "lit4", "lit8", "bss", "sbss")
 SECTION = {"data": ".data", "sdata": ".data", "rodata": ".data", "lit4": ".data", "lit8": ".data",
            "bss": ".bss", "sbss": ".bss"}  # everything writable: the original rodata is patched in places
@@ -76,7 +77,7 @@ def main():
     for old in dst.glob("*.s"):
         old.unlink()
     n = 0
-    for kind, name, addr in chunks(ROOT / "config/SLUS_216.78.yaml"):
+    for kind, name, addr in chunks(ROOT / MAIN_YAML):
         src = pathlib.Path(a.asm) / "data" / f"{name}.{kind}.s"
         if not src.exists():
             raise SystemExit(f"missing {src}: run the decompilation's configure.py first")
