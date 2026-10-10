@@ -233,7 +233,7 @@ int __wrap_main(int argc, char **argv) {
 /* ---- The game's own data, fetched from the user's disc (release builds).
    A program made by port/tools/strip_data.py has the data tables of the game's two programs and the VU1
    microprograms set to zero, and a list next to it (<program>.dat) of where each run of bytes comes from: the
-   user's SLUS_216.78 (as a flat image from 0x100000) or BIN/DBZP.BIN. This copies them in before anything else
+   user's SLUS_219.22 (as a flat image from 0x100000) or BIN/DBZP.BIN. This copies them in before anything else
    runs. A program without that list still has the data linked in (the developer's build) and nothing happens. */
 #define ROM_BASE 0x100000u
 #define ROM_END 0x2FF180u
@@ -378,7 +378,7 @@ static void Port_LoadGameData(void) {
     free(src[1]);
     free(list);
     if (hash != want) {
-        data_fail("the game's programs in your game data are not the unmodified USA release (SLUS-21678)", NULL);
+        data_fail("the game's programs in your game data are not the Brazilian DBZT4 1.8 (V2) release (SLUS-21922)", NULL);
     }
 }
 

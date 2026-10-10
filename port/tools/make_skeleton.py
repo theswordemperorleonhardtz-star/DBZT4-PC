@@ -11,7 +11,7 @@ with the disc (gen_data.py's real tables, assembled in port/build/obj_data64):
                               .zero N          N bytes that are zero on PC (padding; addresses of PS2 code)
                               .long symbol     an address the linker fills in
     port/data/index.txt   for every file: which of the user's files its values come from and where
-                          (0 = SLUS_216.78 as a flat image from 0x100000, 1 = BIN/DBZP.BIN), and a checksum of all
+                          (0 = the main ELF (MAIN_ELF below) as a flat image from 0x100000, 1 = BIN/DBZP.BIN), and a checksum of all
                           the values in order, so that a wrong disc is noticed at start
 
 These files contain no value of the game's data and are committed; with them the port builds without a disc
@@ -24,6 +24,7 @@ import pathlib, re, struct, subprocess
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 OBJ = ROOT / "port/build/obj_data64"
 OUT = ROOT / "port/data"
+MAIN_ELF = "SLUS_219.22"  # Brazilian DBZT4 1.8 (V2); "SLUS_216.78" for the USA release
 ROM_BASE, ROM_END, DBZP_BASE = 0x100000, 0x2FF180, 0x334C00
 
 def flat_image(elf):
@@ -81,7 +82,7 @@ def main():
             m = re.match(r"(\w+)\s*=\s*0x([0-9A-Fa-f]+)", l)
             if m:
                 known[m.group(1)] = int(m.group(2), 16)
-    src = [flat_image(ROOT / "gamedata/disc/SLUS_216.78"), (ROOT / "gamedata/disc/BIN/DBZP.BIN").read_bytes()]
+    src = [flat_image(ROOT / "gamedata/disc" / MAIN_ELF), (ROOT / "gamedata/disc/BIN/DBZP.BIN").read_bytes()]
     base = [ROM_BASE, DBZP_BASE]
     OUT.mkdir(exist_ok=True)
     for old in OUT.glob("*.s"):
@@ -149,7 +150,7 @@ def main():
         (OUT / (name + ".s")).write_text("\n".join(out) + "\n")
         if data is not None:
             index.append(f"{name} {which} {so:#x}")
-    (OUT / "index.txt").write_text("# table file, source (0 SLUS_216.78 flat from 0x100000, 1 BIN/DBZP.BIN), offset in it of the table's first byte\n" +
+    (OUT / "index.txt").write_text("# table file, source (0 main ELF flat from 0x100000, 1 BIN/DBZP.BIN), offset in it of the table's first byte\n" +
                                    "\n".join(index) + f"\nchecksum {h:#018x}\n")
     print(f"{len(list(OUT.glob('*.s')))} table files in port/data: {copied} bytes come from the disc, {zeroed} are zero, {pointers} addresses; "
           f"checksum {h:#018x}")
