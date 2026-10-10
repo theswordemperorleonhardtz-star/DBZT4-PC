@@ -183,7 +183,7 @@ HeapBlock *Heap_FindFreeFromTail(s32 heap, s32 size) {
 static int gHeapCheckOn = -1;
 /* The last few operations, with their caller and its caller: the tear happens between two of them,
    and the culprit is the game code that ran in between, so the sequence names it. */
-#define HEAP_HIST 8
+#define HEAP_HIST 16
 static struct { const char *what; const void *c0; const void *c1; } gHeapHist[HEAP_HIST];
 static int gHeapHistAt;
 static int gHeapHistHave;
@@ -251,6 +251,9 @@ HeapBlock *Heap_AllocBlock(s32 size, u32 align, s32 fromTail, s32 heap) {
     HeapBlock *free;
     s32 need;
 
+    /* Also here: Heap_Alloc is small enough to be inlined into its caller, and then this return
+       address is the game function, which is what we want to see. */
+    HEAP_CHECK("block:enter", heap, size, align, fromTail, __builtin_return_address(0));
     if (size <= 0) {
         return NULL;
     }
@@ -279,6 +282,7 @@ HeapBlock *Heap_AllocBlock(s32 size, u32 align, s32 fromTail, s32 heap) {
         need = block->size;
     }
     Heap_InitUsedBlock(block, need, size, align, fromTail);
+    HEAP_CHECK("block:leave", heap, size, align, fromTail, __builtin_return_address(0));
     return block;
 }
 
