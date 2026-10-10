@@ -1,6 +1,12 @@
 #ifndef MENU_MENU_A_H
 #define MENU_MENU_A_H
 
+#ifdef BT3_MOD_DBZT4
+/* The mod appends a per-character relation table (160 records of nine words) to the screens that
+   show characters; every such header needs the count, so it lives here (bt4_links.c). */
+#define BT4_LINKS_COUNT 160
+#endif
+
 #include "types.h"
 
 /*

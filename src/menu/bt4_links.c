@@ -19,7 +19,7 @@
 
 #ifdef BT3_MOD_DBZT4
 
-const s32 Bt4_CharSelLinks[BT4_CHARSEL_LINKS][9] = {
+const s32 Bt4_CharSelLinks[BT4_LINKS_COUNT][9] = {
     {  13, 2,  13,  12,   0,   0,   0,   0,   0 }  /* 13 */
     {  39, 2,  39,  40,   0,   0,   0,   0,   0 },
     {  22, 2,  22, 207,   0,   0,   0,   0,   0 },
@@ -187,7 +187,7 @@ void Bt4_Links_Fill(s32 (*links1)[9], s32 (*links2)[9]) {
     s32 i;
     s32 j;
 
-    for (i = 0; i < BT4_CHARSEL_LINKS; i++) {
+    for (i = 0; i < BT4_LINKS_COUNT; i++) {
         for (j = 0; j < 9; j++) {
             links1[i][j] = Bt4_CharSelLinks[i][j];
             links2[i][j] = Bt4_CharSelLinks[i][j];

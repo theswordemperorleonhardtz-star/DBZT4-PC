@@ -181,9 +181,9 @@ typedef struct TeamSel {
        + 0x1680 + 0x12FC later, and their 160 records match the character-select table byte for
        byte (bt4_links.c). */
     /* 0x3EA4 */ u8  unk3EA4[0x28];
-    /* 0x3ECC */ s32 links1[BT4_CHARSEL_LINKS][9];
+    /* 0x3ECC */ s32 links1[BT4_LINKS_COUNT][9];
     /* 0x554C */ u8  unk554C[0x12FC];
-    /* 0x6848 */ s32 links2[BT4_CHARSEL_LINKS][9];
+    /* 0x6848 */ s32 links2[BT4_LINKS_COUNT][9];
     /* 0x7EC8 */ u8  unk7EC8[0x12D8];
 #endif
 } TeamSel; /* 0x3EA4, or 0x91A0 under BT3_MOD_DBZT4 */

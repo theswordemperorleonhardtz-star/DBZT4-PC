@@ -141,11 +141,6 @@ typedef struct CharSelProgress {
 #endif
 #define CHARSEL_BGM_RANDOM_FIRST 0x10B1E /* + Rand_Range(9) */
 
-#ifdef BT3_MOD_DBZT4
-/* The mod's per-character relation table has this many records (bt4_links.c). */
-#define BT4_CHARSEL_LINKS 160
-#endif
-
 typedef struct CharSel {
     /* 0x0000 */ u32 *pack;                 /* this screen's section of archive 5 or 6 (compressed) */
     /* 0x0004 */ u32 *res;                  /* the same unpacked: a pack of 57 sections */
@@ -201,16 +196,16 @@ typedef struct CharSel {
        table and a final gap, so the struct ends at 0x8D48 = 36168 -- the size the mod's
        CharSel_Init asks Heap_Alloc for. */
     /* 0x3A4C */ u8  unk3A4C[0x24];
-    /* 0x3A70 */ s32 links1[BT4_CHARSEL_LINKS][9];  /* [character][count][character][up to six ids] */
+    /* 0x3A70 */ s32 links1[BT4_LINKS_COUNT][9];  /* [character][count][character][up to six ids] */
     /* 0x50F0 */ u8  unk50F0[0x12FC];
-    /* 0x63EC */ s32 links2[BT4_CHARSEL_LINKS][9];  /* the same table again */
+    /* 0x63EC */ s32 links2[BT4_LINKS_COUNT][9];  /* the same table again */
     /* 0x7A6C */ u8  unk7A6C[0x12DC];
 #endif
 } CharSel; /* 0x3A4C, or 0x8D48 under BT3_MOD_DBZT4 */
 
 #ifdef BT3_MOD_DBZT4
 /* The mod's table and the helper that copies it (and its twin) into a fresh struct (bt4_links.c). */
-extern const s32 Bt4_CharSelLinks[BT4_CHARSEL_LINKS][9];
+extern const s32 Bt4_CharSelLinks[BT4_LINKS_COUNT][9];
 void Bt4_Links_Fill(s32 (*links1)[9], s32 (*links2)[9]);
 void Bt4_CharSel_InitLinks(CharSel *cs);
 #endif
