@@ -1,4 +1,6 @@
-# table file, source (0 SLUS_216.78 flat from 0x100000, 1 BIN/DBZP.BIN), offset in it of the table's first byte
+# table file, source (0 SLUS_219.22 flat from 0x100000, 1 BIN/DBZP.BIN), offset in it of the table's first byte
+# The offsets are the ones the USA release uses; the Brazilian disc keeps its tables in the same
+# places (only 77 bytes in 4 of the 69 tables differ).  The checksum is the Brazilian disc's.
 cod_1C3380.data 0 0x1c3380
 cod_1C3388.data 0 0x1c3380
 cod_1C3398.data 0 0x1c3390
@@ -68,4 +70,4 @@ inc_D_002F3440.rodata 0 0x1f3440
 inc_gEftShotFxRows.rodata 0 0x1ed0e0
 inc_gEftShotFxSegs.rodata 0 0x1ecec0
 vu1_micro.data 0 0x1bf6b0
-checksum 0x94ac6a4484be12e8
+checksum 0xd1657b5002e1df48
