@@ -9,10 +9,13 @@
 #define PORT 1
 
 /* This fork builds the PC port for the Brazilian "DBZT4 1.8 (V2)" disc instead
- * of the clean USA release.  It only adds guarded branches to the shared game
- * sources (include/sys/file.h, src/sys/file.c); removing this define builds the
- * USA path again.  The constants and the measured evidence are in
- * port/include/bt4_mod.h and _bt4pc/worklist/FILE_ID_MAPPING.md. */
+ * of the clean USA release.  It adds guarded branches to the shared game sources
+ * (roughly 54 blocks in 20 files: the file-id map in include/sys/file.h and
+ * src/sys/file.c, the resource helpers of src/battle/*, the menu rules of
+ * src/menu/*), plus the new headers port/include/bt4_mod.h and the modded file
+ * layer; removing this define builds the USA path again.  What each branch ports
+ * and the measured evidence are in _bt4pc/worklist/DBZQ_OVERLAY.md,
+ * _bt4pc/worklist/EXTRA_SEMANTICS.md and _bt4pc/worklist/FILE_ID_MAPPING.md. */
 #define BT3_MOD_DBZT4 1
 
 /* The game's types: on the PS2 `long` is 64 bits. Take over include/types.h. */
