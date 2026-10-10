@@ -22,8 +22,9 @@ import argparse, hashlib, os, pathlib, shutil, struct, subprocess, sys, threadin
 ROOT = pathlib.Path(__file__).resolve().parent
 LOG = ROOT / "install.log"
 VENV = ROOT / ".venv"
-ROM_SHA1 = "caee6c2269bba89fc51eea9e7beac3adbec9dc52"   # SLUS_216.78 as a flat image (config/SLUS_216.78.yaml)
-DBZP_SHA1 = "4f910969e05d9b25c83af7642b60da9949a4348b"  # BIN/DBZP.BIN (config/DBZP.yaml)
+MAIN_ELF = "SLUS_219.22"                                # Brazilian DBZT4 1.8 (V2) main program
+ROM_SHA1 = "7e8398621de3cf458755109e59704a20d60fc082"   # SLUS_219.22 as a flat image (config/SLUS_219.22.yaml)
+DBZP_SHA1 = "c31deddb3df9048a9274185629fcb8c10b5ce61d"  # BIN/DBZP.BIN (config/DBZP.yaml, mod version)
 ROM_BASE, ROM_END = 0x100000, 0x2FF180
 SPLAT = "splat64[mips]==0.50.0"
 
@@ -212,9 +213,9 @@ def flat_image(elf):
 
 
 def step_disc(args):
-    """The two programs of the game, checked: disc/SLUS_216.78.rom and disc/BIN/DBZP.BIN."""
+    """The two programs of the game, checked: disc/SLUS_219.22.rom and disc/BIN/DBZP.BIN."""
     disc = ROOT / "disc"
-    rom, dbzp = disc / "SLUS_216.78.rom", disc / "BIN" / "DBZP.BIN"
+    rom, dbzp = disc / f"{MAIN_ELF}.rom", disc / "BIN" / "DBZP.BIN"
     def good():
         return rom.is_file() and dbzp.is_file() and hashlib.sha1(rom.read_bytes()).hexdigest() == ROM_SHA1 and \
             hashlib.sha1(dbzp.read_bytes()).hexdigest() == DBZP_SHA1
@@ -224,17 +225,17 @@ def step_disc(args):
     iso = find_iso(args)
     s = Step("Disc image")
     code, listing = run(["7z", "l", iso])
-    if code != 0 or "SLUS_216.78" not in listing:
-        s.fail(f"{iso.name} is not a disc image of the USA release (no SLUS_216.78 on it).\n"
-               "    Other regions and the Wii version have different programs and are not supported.")
-    code, _ = run(["7z", "x", "-y", f"-o{disc}", iso, "SLUS_216.78", "BIN"])
-    if code != 0 or not (disc / "SLUS_216.78").is_file() or not dbzp.is_file():
+    if code != 0 or MAIN_ELF not in listing:
+        s.fail(f"{iso.name} is not a disc image of the DBZT4 1.8 (V2) release (no {MAIN_ELF} on it).\n"
+               "    The Brazilian DBZT4 disc and the USA release are different builds.")
+    code, _ = run(["7z", "x", "-y", f"-o{disc}", iso, MAIN_ELF, "BIN"])
+    if code != 0 or not (disc / MAIN_ELF).is_file() or not dbzp.is_file():
         s.fail("The disc image could not be read (see install.log).")
-    rom.write_bytes(flat_image(disc / "SLUS_216.78"))
+    rom.write_bytes(flat_image(disc / MAIN_ELF))
     if not good():
         s.fail("The game's programs on this disc do not have the expected checksums.\n"
-               "    The port is built from the unmodified USA release (SLUS-21678); a patched or damaged image will not work.")
-    s.ok("the USA release, checksums match")
+               "    This build is for the Brazilian DBZT4 1.8 (V2) release (SLUS-21922); another image will not work.")
+    s.ok("the DBZT4 1.8 (V2) release, checksums match")
     return iso
 
 
@@ -242,7 +243,7 @@ def step_disc(args):
 
 def step_gamedata(args, iso):
     data = ROOT / "gamedata"
-    have = all((data / d).is_dir() and any((data / d).iterdir()) for d in ("pzs3us0", "pzs3us1", "pzs3us2")) and (data / "disc" / "DATA").is_dir()
+    have = all((data / d).is_dir() and any((data / d).iterdir()) for d in ("bt3pus1", "bt3pus2", "bt3pus3")) and (data / "disc" / "DATA").is_dir()
     if not args.force and have:
         Step("Game data").skip("already unpacked")
         return
@@ -280,7 +281,7 @@ def step_split(args):
         code, _ = run([py, "-m", "pip", "install", "--quiet", "--disable-pip-version-check", SPLAT])
         if code != 0:
             s.fail(f"Could not install {SPLAT} (see install.log). This step needs an internet connection once.")
-    for name in ("SLUS_216.78", "DBZP"):
+    for name in (MAIN_ELF, "DBZP"):
         s.note = name
         code, _ = run([py, "-m", "splat", "split", ROOT / "config" / f"{name}.yaml"])
         if code != 0:

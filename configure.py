@@ -48,16 +48,16 @@ AS_G_FLAGS = {"src/menu/menu_t_b": "-G8"}
 # of the overlay calling the main executable, or the reverse, needs them); `image` is the target's address range.
 TARGETS = [
     {
-        "name": "SLUS_216.78",
-        "yaml": "config/SLUS_216.78.yaml",
+        "name": "SLUS_219.22",
+        "yaml": "config/SLUS_219.22.yaml",
         "subdir": None,
-        "original": "disc/SLUS_216.78.rom",
-        "built": "build/SLUS_216.78.rom",
+        "original": "disc/SLUS_219.22.rom",
+        "built": "build/SLUS_219.22.rom",
         "src_subdir": None,
         "image": (0x100000, 0x334C00),
-        "extern_syms": "build/SLUS_216.78_extern_syms.ld",
-        "ld_scripts": ["build/SLUS_216.78.ld", "build/undefined_funcs_auto.txt",
-                       "build/undefined_syms_auto.txt", "build/SLUS_216.78_extern_syms.ld",
+        "extern_syms": "build/SLUS_219.22_extern_syms.ld",
+        "ld_scripts": ["build/SLUS_219.22.ld", "build/undefined_funcs_auto.txt",
+                       "build/undefined_syms_auto.txt", "build/SLUS_219.22_extern_syms.ld",
                        "config/linker_script_extra.ld"],
     },
     {
@@ -92,17 +92,17 @@ def run(cmd, **kwargs):
 
 
 def extract():
-    if (DISC / "SLUS_216.78").exists() and (DISC / "BIN" / "DBZP.BIN").exists():
+    if (DISC / "SLUS_219.22").exists() and (DISC / "BIN" / "DBZP.BIN").exists():
         return
     if not ISO.exists():
         sys.exit(f"missing disc image: {ISO.name}")
-    run(["7z", "x", "-y", f"-o{DISC}", ISO, "SYSTEM.CNF", "SLUS_216.78", "BIN", "IRX"],
+    run(["7z", "x", "-y", f"-o{DISC}", ISO, "SYSTEM.CNF", "SLUS_219.22", "BIN", "IRX"],
         stdout=subprocess.DEVNULL)
 
 
 def make_rom():
     run([BINUTILS + "objcopy", "-O", "binary", "--gap-fill=0x00",
-         f"--pad-to={ROM_PAD_TO:#x}", DISC / "SLUS_216.78", DISC / "SLUS_216.78.rom"])
+         f"--pad-to={ROM_PAD_TO:#x}", DISC / "SLUS_219.22", DISC / "SLUS_219.22.rom"])
 
 
 def split(target):

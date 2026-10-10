@@ -22,8 +22,10 @@
 
 namespace {
 
-const char *kRomSha1 = "caee6c2269bba89fc51eea9e7beac3adbec9dc52";
-const char *kDbzpSha1 = "4f910969e05d9b25c83af7642b60da9949a4348b";
+/* Brazilian DBZT4 1.8 (V2): SLUS_219.22 and the mod's BIN/DBZP.BIN. */
+const char *kMainElf = "SLUS_219.22";
+const char *kRomSha1 = "7e8398621de3cf458755109e59704a20d60fc082";
+const char *kDbzpSha1 = "c31deddb3df9048a9274185629fcb8c10b5ce61d";
 const Uint32 kRomBase = 0x100000, kRomEnd = 0x2FF180;
 #ifdef _WIN32
 const char *kGame = "Tenkaichi3Decomp.exe";
@@ -223,10 +225,10 @@ void copy_out(Iso &iso, Uint64 offset, Uint64 size, const std::string &path, std
 void step_disc(Iso &iso, const std::string &path) {
     say("@step 1 3 Disc image");
     iso.open(path);
-    const IsoFile *slus = iso.find("SLUS_216.78"), *dbzp = iso.find("BIN/DBZP.BIN");
+    const IsoFile *slus = iso.find(kMainElf), *dbzp = iso.find("BIN/DBZP.BIN");
     if (slus == NULL || dbzp == NULL) {
-        throw Stop{"This is not a disc image of the USA release of Budokai Tenkaichi 3 (no SLUS_216.78 on it).\n"
-                   "Other regions and the Wii version have different programs and are not supported."};
+        throw Stop{"This is not a disc image of the Brazilian DBZT4 1.8 (V2) release (no SLUS_219.22 on it).\n"
+                   "The USA release and other regions have different programs and are not supported by this build."};
     }
     say("@note checking");
     std::vector<Uint8> elf((size_t)slus->size), rom(kRomEnd - kRomBase, 0), menu((size_t)dbzp->size);
@@ -268,7 +270,7 @@ void step_data(Iso &iso, const std::string &root) {
     Uint64 total = 0, done = 0;
     for (auto &f : iso.files) {
         std::string u = upper(f.path);
-        if (u == "SLUS_216.78" || u.rfind("BIN/", 0) == 0 || u.rfind("DATA/", 0) == 0) {
+        if (u == kMainElf || u.rfind("BIN/", 0) == 0 || u.rfind("DATA/", 0) == 0) {
             take.push_back(&f);
             total += f.size;
         }
