@@ -270,8 +270,14 @@ void TeamSel_UpdateFaceLoad(void) {
                 gTeamSel->faceState = TEAMSEL_LOAD_IDLE;
             }
         } else {
+#ifdef BT3_MOD_DBZT4
+            /* The mod requests through its own helper (DBZQ 0x3C5C20, site 0x349B9C). */
+            File_Request(Bt4_TeamSelFaceFile(gTeamSel->faceSide),
+                         gTeamSel->faceFile[gTeamSel->faceSide], 0x16800);
+#else
             File_Request(gTeamSel->side[gTeamSel->faceSide]->chara + TS_FACE_FILE,
                          gTeamSel->faceFile[gTeamSel->faceSide], 0x16800);
+#endif
             gTeamSel->faceState = TEAMSEL_LOAD_READ;
         }
         break;
