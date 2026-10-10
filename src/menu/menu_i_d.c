@@ -70,6 +70,19 @@ void EntrySel_SetMemberTex(void) {
     }
 }
 
+#ifdef BT3_MOD_DBZT4
+/* See Bt4_FaceFileFrom in menu_c_e.c.  DBZQ 0x3C6428 (the synchronous load) and 0x3C6530 (the
+   request); its helper 0x3C6830 reads gEntrySel + 0x3C4 (the state pointer) and then one field,
+   and the tool dropped the second load.  The first is the *fixed* offset 0x18 -- entry[0].costume,
+   not the cursor's entry -- and the second is the shown character at 0x1BC, which is the
+   "sel->image" of the USA id.  The fixed offset is odd but it is what the mod does. */
+s32 Bt4_EntrySelFaceFile(void) {
+    ESelState *s = gEntrySel->sel;
+
+    return Bt4_FaceFileFrom(s->entry[0].costume, s->image);
+}
+#endif
+
 /* One step of the background loader of the large picture (file 0x2F9 + character). */
 void EntrySel_UpdateImage(void) {
     MTexRes *res;
@@ -86,7 +99,12 @@ void EntrySel_UpdateImage(void) {
         break;
     case ESEL_LOAD_REQUEST:
         File_CancelRequests();
+#ifdef BT3_MOD_DBZT4
+        /* The mod requests through its own helper (DBZQ 0x3C6530, site 0x35E4C0). */
+        File_Request(Bt4_EntrySelFaceFile(), gEntrySel->imageFile, 0x16800);
+#else
         File_Request(gEntrySel->sel->image + 0x2F9, gEntrySel->imageFile, 0x16800);
+#endif
         gEntrySel->loadState = ESEL_LOAD_READ;
         break;
     case ESEL_LOAD_READ:
@@ -335,7 +353,12 @@ void EntrySel_Init(s32 section) {
     for (i = 0; i < 2; i++) {
         gEntrySel->blink[i] = Rand_Range(0x20);
     }
+#ifdef BT3_MOD_DBZT4
+    /* The mod loads through its own helper (DBZQ 0x3C6428, site 0x35F56C). */
+    File_LoadSync(Bt4_EntrySelFaceFile(), gEntrySel->imageFile, 0x16800);
+#else
     File_LoadSync(gEntrySel->sel->image + 0x2F9, gEntrySel->imageFile, 0x16800);
+#endif
     Sprite_Unpack(gEntrySel->imageFile, gEntrySel->imageRes, NULL);
     res = gEntrySel->imageRes;
     Res_RelocateOffsets(&res, res, res);
