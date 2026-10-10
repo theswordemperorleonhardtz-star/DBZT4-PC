@@ -193,8 +193,8 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
     s32 h;
 
     if (heap != HEAP_ANY && (heap < 0 || heap >= HEAP_COUNT)) {
-        fprintf(stderr, "bt3: HEAP ID OUT OF RANGE: %s asked for heap %d (0..%d, or %d for any)\n",
-                what, (int)heap, (int)(HEAP_COUNT - 1), (int)HEAP_ANY);
+        fprintf(stderr, "bt3: HEAP ID OUT OF RANGE: %s asked for heap %d (0..%d, or %d for any), caller %p\n",
+                what, (int)heap, (int)(HEAP_COUNT - 1), (int)HEAP_ANY, ret);
         fflush(stderr);
         exit(3);
     }
@@ -209,8 +209,8 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
                 block->size < 0x20 || block->size > (s32)(hi - (u8 *)block) || ++guard > 200000) {
                 int k;
                 fprintf(stderr,
-                        "bt3: HEAP BROKEN in heap %d: %s (heap=%d size=%d align=%u tail=%d)\n",
-                        (int)h, what, (int)heap, (int)size, align, (int)fromTail);
+                        "bt3: HEAP BROKEN in heap %d: %s (heap=%d size=%d align=%u tail=%d, its caller %p)\n",
+                        (int)h, what, (int)heap, (int)size, align, (int)fromTail, ret);
                 fprintf(stderr, "bt3: the last %d heap operations, oldest first (caller, and its caller):\n",
                         gHeapHistHave);
                 for (k = 0; k < gHeapHistHave; k++) {
