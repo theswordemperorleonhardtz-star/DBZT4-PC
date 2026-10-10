@@ -509,8 +509,81 @@ BtlResWork *BtlRes_GetWork(void) {
     return &gBtlObjWork->res;
 }
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's injected character-resource ids (SLUS_219.22 .extra):
+ *   0x3BEE68 = model  0x3BEF18 = anim0  0x3BEFD0 = anim1
+ * Each first probes the file at the resource's partition-1 index and falls back to a fixed
+ * id when the probe reads exactly one sector (2048), which the disc uses as a placeholder.
+ *
+ * BT4_CHARA_STRIDE: the injected code multiplies the character slot by 40 but never reads
+ * the product (no mflo anywhere near it; see EXTRA_SEMANTICS.md), so the shipped disc
+ * behaves as stride 1.  Set to 40 if the resource layout is ever confirmed to be strided. */
+#define BT4_CHARA_STRIDE 1
+#define BT4_RES_MODEL_BASE 70039  /* 0x11197 */
+#define BT4_RES_ANIM0_BASE 70189  /* 0x1122D */
+#define BT4_RES_ANIM1_BASE 70213  /* 0x11235 */
+
+static s32 Bt4_CharaSlot(s32 chara) {
+    return (chara >= 165 ? chara - 9 : chara) * BT4_CHARA_STRIDE;
+}
+
+/* Size in bytes of one file of a partition, waited for as File_LoadSyncEx waits. */
+static u32 Bt4_FileSizePt(s32 pt, s32 index) {
+    ADXF adxf;
+    s32 sectors;
+
+    while ((adxf = ADXF_OpenAfs(pt, index)) == NULL) {
+    }
+    sectors = ADXF_GetFsizeSct(adxf);
+    ADXF_Close(adxf);
+    return (u32)sectors << 11;
+}
+
+s32 Bt4_CharaResModel(s32 chara, s32 a1, s32 a2) {
+    s32 c = Bt4_CharaSlot(chara);
+    s32 t = a2 != 0 ? 0x8E : 0x86;
+
+    if (Bt4_FileSizePt(1, c + a1 + t + 3399) != 2048) {
+        return c + a1 + t + BT4_RES_MODEL_BASE;
+    }
+    if ((Bt4_FileSizePt(1, c + t + 3399) ^ 0x800) != 0) {
+        return c + t + BT4_RES_MODEL_BASE;
+    }
+    return 0x1121D;
+}
+
+s32 Bt4_CharaResAnim0(s32 chara, s32 a1) {
+    s32 c = Bt4_CharaSlot(chara);
+    s32 base = c + BT4_RES_ANIM0_BASE;
+    s32 id = base + a1;
+    s32 size = Bt4_FileSizePt(1, id - 66640);
+
+    if (size != 2048) {
+        return id;
+    }
+    return Bt4_FileSizePt(1, c + 3549) == size ? id : base;
+}
+
+s32 Bt4_CharaResAnim1(s32 chara, s32 a1) {
+    s32 c = Bt4_CharaSlot(chara);
+    s32 base = c + BT4_RES_ANIM1_BASE;
+    s32 id = base + a1;
+    s32 size = Bt4_FileSizePt(1, id - 66640);
+
+    if (size != 2048) {
+        return id;
+    }
+    return Bt4_FileSizePt(1, c + 3557) == size ? id : base;
+}
+#endif
+
 /* Requests a character's model and its two animation files; returns the resource slot number. */
 s32 BtlObj_RequestCharaModel(s32 side, s32 chara, s32 costume, s32 variant) {
+#ifdef BT3_MOD_DBZT4
+    (void)side;
+    return BtlRes_Request(1, Bt4_CharaResModel(chara, costume, variant),
+                          Bt4_CharaResAnim0(chara, costume), Bt4_CharaResAnim1(chara, costume));
+#else
     s32 model;
 
     if (variant != 0) {
@@ -519,6 +592,7 @@ s32 BtlObj_RequestCharaModel(s32 side, s32 chara, s32 costume, s32 variant) {
         model = chara * 10 + costume + 0x590;
     }
     return BtlRes_Request(1, model, chara * 10 + 0x598, chara * 10 + 0x599);
+#endif
 }
 
 /* Returns the work block. */

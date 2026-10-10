@@ -1,5 +1,6 @@
 #include "common.h"
 #include "battle/view_a.h"
+#include "battle/btl_obj.h"
 #include "battle/orbit_cam.h"
 #include "sys/common.h"
 #include "sys/fade.h"
@@ -86,10 +87,15 @@ ChrView *gChrView = NULL;
 
 /* File id of a character's model: costume n, or its damaged version. */
 s32 ChrView_GetModelFile(s32 chara, s32 costume, s32 damaged) {
+#ifdef BT3_MOD_DBZT4
+    /* The mod routes the model viewer through its injected id helper (0x3BEE68). */
+    return Bt4_CharaResModel(chara, costume, damaged);
+#else
     if (damaged != 0) {
         return chara * 10 + costume + (CHRVIEW_FILE_FIRST + 4);
     }
     return chara * 10 + costume + CHRVIEW_FILE_FIRST;
+#endif
 }
 
 /* The character's entry in the table of common file 4, NULL for an id that is not a character. */

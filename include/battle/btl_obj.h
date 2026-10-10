@@ -412,6 +412,13 @@ void BtlRes_CommitReload(void);
 void BtlRes_Init(s32 prealloc);
 void BtlRes_Term(void);
 s32 BtlRes_Request(s32 fixed, s32 model, s32 anim0, s32 anim1);
+#ifdef BT3_MOD_DBZT4
+/* Brazilian DBZT4 1.8 (V2): the character resource ids its injected .extra section computes
+ * (0x3BEE68 / 0x3BEF18 / 0x3BEFD0).  Decoded in _bt4pc/worklist/EXTRA_SEMANTICS.md. */
+s32 Bt4_CharaResModel(s32 chara, s32 a1, s32 a2);
+s32 Bt4_CharaResAnim0(s32 chara, s32 a1);
+s32 Bt4_CharaResAnim1(s32 chara, s32 a1);
+#endif
 void BtlRes_Free(s32 number);
 BtlResSlot *BtlRes_GetSlot(s32 number);
 void BtlRes_Reload(s32 number, s32 model, s32 anim0, s32 anim1);
