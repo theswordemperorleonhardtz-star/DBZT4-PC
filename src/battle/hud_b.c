@@ -601,6 +601,40 @@ void HudGauge_UpdateBlast(void) {
  * After HudGauge_SetStatIcons changed the set: 0/1 fade out the icons that went (0.2 s), 2/3 slide the ones that
  * stay to their new places (0.3 s, cubic ease-out), 4/5 fade in the new ones (0.2 s); the state then runs past 5
  * (or is -1) and the icons are drawn at rest. An icon is bright if its bit of statPos is set, dark otherwise. */
+#ifdef BT3_MOD_DBZT4
+/* The mod moves and shrinks the stat-icon cluster of HudGauge_UpdateStatIcons; the four loops below
+   each use these values (they are the 4 x 12 changed immediates of that function). */
+#define HUDSTAT_ICON_X   (-54)   /* was 5 */
+#define HUDSTAT_ICON_Y   14      /* was -5 */
+#define HUDSTAT_FRAME_W  0x1A    /* was 0x2A: the frame rectangle is narrower */
+#define HUDSTAT_FRAME_H  0x0F    /* was 0x16 */
+#define HUDSTAT_FRAME_U1 0x1A    /* was 0x2A: its texture is cut to match */
+#define HUDSTAT_FRAME_V1 0x25    /* was 0x2C */
+#define HUDSTAT_FRAME_DX 0x34    /* was 0x66: the frame sits further left */
+#define HUDSTAT_FRAME_DY 0x2D    /* was 0x18 */
+#define HUDSTAT_SHADE_W  0x17    /* was 0x27: the shade rectangle too */
+#define HUDSTAT_SHADE_H  0x0E    /* was 0x15 */
+#define HUDSTAT_SHADE_U1 0x14    /* was 0x24 */
+#define HUDSTAT_SHADE_V1 0x39    /* was 0x40 */
+#define HUDSTAT_SHADE_DX 0x34    /* was 0x66 */
+#define HUDSTAT_SHADE_DY 0x2D    /* was 0x18 */
+#else
+#define HUDSTAT_ICON_X   5
+#define HUDSTAT_ICON_Y   (-5)
+#define HUDSTAT_FRAME_W  0x2A
+#define HUDSTAT_FRAME_H  0x16
+#define HUDSTAT_FRAME_U1 0x2A
+#define HUDSTAT_FRAME_V1 0x2C
+#define HUDSTAT_FRAME_DX 0x66
+#define HUDSTAT_FRAME_DY 0x18
+#define HUDSTAT_SHADE_W  0x27
+#define HUDSTAT_SHADE_H  0x15
+#define HUDSTAT_SHADE_U1 0x24
+#define HUDSTAT_SHADE_V1 0x40
+#define HUDSTAT_SHADE_DX 0x66
+#define HUDSTAT_SHADE_DY 0x18
+#endif
+
 void HudGauge_UpdateStatIcons(void) {
     s32 side = gHudGauge->side;
     u32 mask = gHudGauge->statMask[side];
@@ -662,15 +696,15 @@ void HudGauge_UpdateStatIcons(void) {
                 HudSprite_Show(&frames[i], 0);
                 HudSprite_Show(&shades[i], 0);
             }
-            HudSprite_Move(icon, 5, -5);
+            HudSprite_Move(icon, HUDSTAT_ICON_X, HUDSTAT_ICON_Y);
             HudSprite_Move(icon, from[i], 0);
-            HudSprite_SetRect(&frames[i], 0, 0x2A, 0, 0x16);
-            HudSprite_SetUv(&frames[i], 0, 0x2A, 0x16, 0x2C);
-            HudSprite_Move(&frames[i], 0x66, 0x18);
+            HudSprite_SetRect(&frames[i], 0, HUDSTAT_FRAME_W, 0, HUDSTAT_FRAME_H);
+            HudSprite_SetUv(&frames[i], 0, HUDSTAT_FRAME_U1, 0x16, HUDSTAT_FRAME_V1);
+            HudSprite_Move(&frames[i], HUDSTAT_FRAME_DX, HUDSTAT_FRAME_DY);
             HudSprite_Move(&frames[i], from[i], 0);
-            HudSprite_SetRect(&shades[i], 3, 0x27, 1, 0x15);
-            HudSprite_SetUv(&shades[i], 0, 0x24, 0x2C, 0x40);
-            HudSprite_Move(&shades[i], 0x66, 0x18);
+            HudSprite_SetRect(&shades[i], 3, HUDSTAT_SHADE_W, 1, HUDSTAT_SHADE_H);
+            HudSprite_SetUv(&shades[i], 0, HUDSTAT_SHADE_U1, 0x2C, HUDSTAT_SHADE_V1);
+            HudSprite_Move(&shades[i], HUDSTAT_SHADE_DX, HUDSTAT_SHADE_DY);
             HudSprite_Move(&shades[i], from[i], 0);
             icon++;
         }
@@ -702,16 +736,16 @@ void HudGauge_UpdateStatIcons(void) {
             t = 1.0f - powf(1.0f - ramp->value, 3.0f);
             x = (f32)from[i] + (f32)(to[i] - from[i]) * t;
             HudSprite_SetColor(icon, c[0], c[1], c[2], c[3]);
-            HudSprite_Move(icon, 5, -5);
+            HudSprite_Move(icon, HUDSTAT_ICON_X, HUDSTAT_ICON_Y);
             HudSprite_Move(icon, x, 0);
             HudSprite_SetColor(&frames[i], 0x80, 0x80, 0x80, 0x80);
-            HudSprite_SetRect(&frames[i], 0, 0x2A, 0, 0x16);
-            HudSprite_SetUv(&frames[i], 0, 0x2A, 0x16, 0x2C);
-            HudSprite_Move(&frames[i], 0x66, 0x18);
+            HudSprite_SetRect(&frames[i], 0, HUDSTAT_FRAME_W, 0, HUDSTAT_FRAME_H);
+            HudSprite_SetUv(&frames[i], 0, HUDSTAT_FRAME_U1, 0x16, HUDSTAT_FRAME_V1);
+            HudSprite_Move(&frames[i], HUDSTAT_FRAME_DX, HUDSTAT_FRAME_DY);
             HudSprite_Move(&frames[i], x, 0);
-            HudSprite_SetRect(&shades[i], 3, 0x27, 1, 0x15);
-            HudSprite_SetUv(&shades[i], 0, 0x24, 0x2C, 0x40);
-            HudSprite_Move(&shades[i], 0x66, 0x18);
+            HudSprite_SetRect(&shades[i], 3, HUDSTAT_SHADE_W, 1, HUDSTAT_SHADE_H);
+            HudSprite_SetUv(&shades[i], 0, HUDSTAT_SHADE_U1, 0x2C, HUDSTAT_SHADE_V1);
+            HudSprite_Move(&shades[i], HUDSTAT_SHADE_DX, HUDSTAT_SHADE_DY);
             HudSprite_Move(&shades[i], x, 0);
             icon++;
         }
@@ -752,15 +786,15 @@ void HudGauge_UpdateStatIcons(void) {
                 HudSprite_Show(&frames[i], 0);
                 HudSprite_Show(&shades[i], 0);
             }
-            HudSprite_Move(icon, 5, -5);
+            HudSprite_Move(icon, HUDSTAT_ICON_X, HUDSTAT_ICON_Y);
             HudSprite_Move(icon, to[i], 0);
-            HudSprite_SetRect(&frames[i], 0, 0x2A, 0, 0x16);
-            HudSprite_SetUv(&frames[i], 0, 0x2A, 0x16, 0x2C);
-            HudSprite_Move(&frames[i], 0x66, 0x18);
+            HudSprite_SetRect(&frames[i], 0, HUDSTAT_FRAME_W, 0, HUDSTAT_FRAME_H);
+            HudSprite_SetUv(&frames[i], 0, HUDSTAT_FRAME_U1, 0x16, HUDSTAT_FRAME_V1);
+            HudSprite_Move(&frames[i], HUDSTAT_FRAME_DX, HUDSTAT_FRAME_DY);
             HudSprite_Move(&frames[i], to[i], 0);
-            HudSprite_SetRect(&shades[i], 3, 0x27, 1, 0x15);
-            HudSprite_SetUv(&shades[i], 0, 0x24, 0x2C, 0x40);
-            HudSprite_Move(&shades[i], 0x66, 0x18);
+            HudSprite_SetRect(&shades[i], 3, HUDSTAT_SHADE_W, 1, HUDSTAT_SHADE_H);
+            HudSprite_SetUv(&shades[i], 0, HUDSTAT_SHADE_U1, 0x2C, HUDSTAT_SHADE_V1);
+            HudSprite_Move(&shades[i], HUDSTAT_SHADE_DX, HUDSTAT_SHADE_DY);
             HudSprite_Move(&shades[i], to[i], 0);
             icon++;
         }
@@ -782,16 +816,16 @@ void HudGauge_UpdateStatIcons(void) {
                 HudSprite_Show(&shades[i], 0);
             }
             HudSprite_SetColor(icon, c[0], c[1], c[2], c[3]);
-            HudSprite_Move(icon, 5, -5);
+            HudSprite_Move(icon, HUDSTAT_ICON_X, HUDSTAT_ICON_Y);
             HudSprite_Move(icon, to[i], 0);
             HudSprite_SetColor(&frames[i], 0x80, 0x80, 0x80, 0x80);
-            HudSprite_SetRect(&frames[i], 0, 0x2A, 0, 0x16);
-            HudSprite_SetUv(&frames[i], 0, 0x2A, 0x16, 0x2C);
-            HudSprite_Move(&frames[i], 0x66, 0x18);
+            HudSprite_SetRect(&frames[i], 0, HUDSTAT_FRAME_W, 0, HUDSTAT_FRAME_H);
+            HudSprite_SetUv(&frames[i], 0, HUDSTAT_FRAME_U1, 0x16, HUDSTAT_FRAME_V1);
+            HudSprite_Move(&frames[i], HUDSTAT_FRAME_DX, HUDSTAT_FRAME_DY);
             HudSprite_Move(&frames[i], to[i], 0);
-            HudSprite_SetRect(&shades[i], 3, 0x27, 1, 0x15);
-            HudSprite_SetUv(&shades[i], 0, 0x24, 0x2C, 0x40);
-            HudSprite_Move(&shades[i], 0x66, 0x18);
+            HudSprite_SetRect(&shades[i], 3, HUDSTAT_SHADE_W, 1, HUDSTAT_SHADE_H);
+            HudSprite_SetUv(&shades[i], 0, HUDSTAT_SHADE_U1, 0x2C, HUDSTAT_SHADE_V1);
+            HudSprite_Move(&shades[i], HUDSTAT_SHADE_DX, HUDSTAT_SHADE_DY);
             HudSprite_Move(&shades[i], to[i], 0);
             icon++;
         }
