@@ -1,5 +1,11 @@
 #include "common.h"
 #include "battle/btl_char_action.h"
+#ifdef BT3_MOD_DBZT4
+#include "sys/pad.h"
+/* chr + 0x1278 is the field the other views of the fighter call injectOn (CPU-controlled);
+   BtlActChr keeps it inside unk1068. */
+#define BT4_CHR_INJECTON(chr) (*(s32 *)((u8 *)(chr) + 0x1278))
+#endif
 
 /*
  * Fighter action state machine, core part: 0x1E0290..0x1E3158.
@@ -647,8 +653,19 @@ void BtlAct_SetFormRandom(BtlActChr *chr) {
 
 /* Counts one at chr + 0xE50 and sets the opponent's + 0xD4C. */
 void BtlAct_CountAndMarkOpponent(BtlActChr *chr) {
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (fragment 0x3C2820, jumped to from 0x1E11D0): holding L2 on pad 0
+       while the fighter is not CPU-controlled counts five instead of one. */
+    if ((gPad[0].held & PAD_L2) != 0 && BT4_CHR_INJECTON(chr) == 0) {
+        chr->unkE50 += 5;
+    } else {
+        chr->unkE50 += 1;
+    }
+    BtlChar_Get(BtlOpp_GetPlayer(chr))->unkD4C = 1;
+#else
     chr->unkE50++;
     BtlChar_Get(BtlOpp_GetPlayer(chr))->unkD4C = 1;
+#endif
 }
 
 /* Ends the state held by flag 0x98: clears it, resets the object's sub-state and calls BtlStat_EndKind4. */
