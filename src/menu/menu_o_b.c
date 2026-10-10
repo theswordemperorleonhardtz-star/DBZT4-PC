@@ -540,6 +540,13 @@ void DiscFusion_Input(s32 *result) {
             gDiscFusion->idle = 0;
             gDiscFusion->talkStep = gDiscFusion->cursor[gDiscFusion->level] + 3;
         } else if (ok) {
+#ifdef BT3_MOD_DBZT4
+            /* The mod's replacement (site 0x3795C0) nops the test on have[cursor]: the disc is
+               always taken as recognised, so the fusion menu always goes on. */
+            gDiscFusion->flags |= UBRES_DONE;
+            gDiscFusion->flags |= UBRES_LEAVING;
+            gDiscFusion->timer = 15;
+#else
             if (gDiscFusion->have[gDiscFusion->cursor[0]]) {
                 gDiscFusion->flags |= UBRES_DONE;
                 gDiscFusion->flags |= UBRES_LEAVING;
@@ -549,6 +556,7 @@ void DiscFusion_Input(s32 *result) {
                 gDiscFusion->dlgStep = DISCFUSION_DLG_ASK;
                 Voice_StopWithLip();
             }
+#endif
             Snd_PlaySe_ret(1, 1);
             gDiscFusion->idle = 0;
         } else if (cancel) {
