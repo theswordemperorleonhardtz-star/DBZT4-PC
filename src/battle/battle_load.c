@@ -28,12 +28,24 @@
 
 #ifdef BT3_MOD_DBZT4
 /* The mod's stage file ids (DBZQ 0x3C5510 / 0x3C555C / 0x3C55AC): the disc's own stages (id < 0x24)
-   keep the USA ids, and the stages the mod adds come from the entries appended to its archive. The
-   three replacement functions use slightly different bases. Their code also computes a reserved-slot
-   value that the tool then overwrites with the stage itself, so the ids stay linear in the stage. */
-#define BT4_STAGE_CHANGE_FILE(stage) ((stage) < 0x24 ? (stage) + BTL_FILE_STAGE : (stage) + 0x111C1)
-#define BT4_STAGE_RELOAD_FILE(stage) ((stage) < 0x24 ? (stage) + BTL_FILE_STAGE : (stage) + 0x111BF)
-#define BT4_STAGE_BANK_FILE(stage) ((stage) < 0x24 ? (stage) + BTL_FILE_SND_STAGE : (stage) + 0x111AD)
+   keep the USA ids, the three reserved slots 0x24..0x26 fall back to one appended entry, and the
+   stages past them come from the entries appended to the archive.
+   How the middle branch is read: 0x3C5510/0x3C555C/0x3C55AC end with "add a0,v0,t0", which throws
+   the branch value away, but their siblings 0x3C5468/0x3C54BC -- the same function with one other
+   constant -- end with "add a0,a0,t0" and are otherwise identical. The tool wrote the wrong
+   register in three of the five, exactly as it did inside 0x3C6058 and in 0x3C562C (s1 -> a1).
+   Read the branch values, which is what the ids need to stay contiguous: the stage * 40 layout of
+   the archive makes "stage - 40 + base" the id of a new stage and "stage + base" the id of a wrong
+   one (off by the 40 entries of one character/stage block). */
+#define BT4_STAGE_CHANGE_FILE(stage) \
+    ((stage) < 0x24 ? (stage) + BTL_FILE_STAGE : \
+     (stage) < 0x27 ? 0x111C1 : (stage) - 40 + 0x111C1)
+#define BT4_STAGE_RELOAD_FILE(stage) \
+    ((stage) < 0x24 ? (stage) + BTL_FILE_STAGE : \
+     (stage) < 0x27 ? 0x111BF : (stage) - 40 + 0x111BF)
+#define BT4_STAGE_BANK_FILE(stage) \
+    ((stage) < 0x24 ? (stage) + BTL_FILE_SND_STAGE : \
+     (stage) < 0x27 ? 0x111AD : (stage) - 40 + 0x111AD)
 #endif
 
 /*
