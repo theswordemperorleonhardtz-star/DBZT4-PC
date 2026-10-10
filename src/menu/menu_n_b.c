@@ -141,7 +141,13 @@ void UbzSel_Init(void) {
     gUbzSel->tex[23] = NULL;
     gUbzSel->tex[24] = NULL;
     gUbzSel->chips = (u32 *)MPACK_AT(gUbzSel->res, 6);
+#ifdef BT3_MOD_DBZT4
+    /* The mod's chip pack holds one texture list per grid id and its grid is bigger (165 -> 296);
+       the section id the pack is reached with stays N_CHIP_NUM. */
+    for (i = 0; i < 296; i++) {
+#else
     for (i = 0; i < N_CHIP_NUM; i++) {
+#endif
         res = (MTexRes *)MPACK_AT(gUbzSel->chips, i + 1);
         Res_RelocateOffsets(&res, res, res);
     }

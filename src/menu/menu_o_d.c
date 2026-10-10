@@ -189,7 +189,12 @@ void MisSel_Init(s32 section) {
     gMisSel->tex[25] = NULL;
     gMisSel->tex[27] = NULL;
     gMisSel->chips = (u32 *)MPACK_AT(gMisSel->res, 15);
+#ifdef BT3_MOD_DBZT4
+    /* See UbzSel_Init: 296 lists in the mod's pack while the section id stays MISSEL_CHIP_NUM. */
+    for (i = 0; i < 296; i++) {
+#else
     for (i = 0; i < MISSEL_CHIP_NUM; i++) {
+#endif
         res = (MTexRes *)MPACK_AT(gMisSel->chips, i + 1);
         Res_RelocateOffsets(&res, res, res);
     }

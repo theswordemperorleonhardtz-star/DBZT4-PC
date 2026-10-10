@@ -103,7 +103,12 @@ void SimTop_Init(s32 section) {
     gSimTop->tex[39] = MTEX(res, 29);
 
     gSimTop->faces = (u32 *)MPACK_AT(gSimTop->res, 7);
+#ifdef BT3_MOD_DBZT4
+    /* The mod's portrait pack has one list per grid id and its grid is bigger (165 -> 296). */
+    for (i = 0; i < 296; i++) {
+#else
     for (i = 0; i < SIMTOP_FACE_NUM; i++) {
+#endif
         res = (MTexRes *)MPACK_AT(gSimTop->faces, i + 1);
         Res_RelocateOffsets(&res, res, res);
     }

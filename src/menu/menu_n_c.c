@@ -209,7 +209,12 @@ void UbRank_Init(void) {
     gUbRank->texC[9] = MTEX(res, 9);
     gUbRank->texC[12] = MTEX(res, 10);
     gUbRank->chips = (u32 *)MPACK_AT(gUbRank->res, 6);
+#ifdef BT3_MOD_DBZT4
+    /* See UbzSel_Init: the mod's pack has 296 lists while the section id stays N_CHIP_NUM. */
+    for (i = 0; i < 296; i++) {
+#else
     for (i = 0; i < N_CHIP_NUM; i++) {
+#endif
         res = (MTexRes *)MPACK_AT(gUbRank->chips, i + 1);
         Res_RelocateOffsets(&res, res, res);
     }
