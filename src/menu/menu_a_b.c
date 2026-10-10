@@ -111,7 +111,13 @@ s32 Progress_Main(s32 arg) {
             gProgress->mode = 1;
             break;
         case 1:
+#ifdef BT3_MOD_DBZT4
+            /* The mod moves the title track to 0x10B2A (site 0x336CB0).  It is above 0x10B29, so the
+               mod's Bgm_Play adds 0x66D and plays it at volume 0x60 (src/sys/adx.c). */
+            Bgm_Play(0x10B2A);
+#else
             Bgm_Play(MENU_BGM_TITLE);
+#endif
             ret = Title_Run(1);
             Adx_StopAll();
             switch (ret) {
@@ -128,7 +134,12 @@ s32 Progress_Main(s32 arg) {
             }
             break;
         case 4:
+#ifdef BT3_MOD_DBZT4
+            /* 0x10B2B (site 0x336D18): the main menu gets its own track in the mod. */
+            Bgm_Play(0x10B2B);
+#else
             Bgm_Play(MENU_BGM_TITLE);
+#endif
             if (MainMenu_Run(2)) {
                 Adx_StopAll();
                 MENU_ARC_FREE(gMenuArc1);
