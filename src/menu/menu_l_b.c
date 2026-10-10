@@ -295,6 +295,11 @@ void SoloSel_Term(void) {
     }
 }
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's shared colour-plate chooser, menu_c_e.c (DBZQ 0x3C615C). */
+extern void Bt4_DrawColorPlates(MFlash *f, s32 count, s32 chosen);
+#endif
+
 /* Sets up every clip of the three movies from the current state and draws the screen. */
 void SoloSel_Draw(void) {
     MFlashRef ref;
@@ -360,6 +365,11 @@ void SoloSel_Draw(void) {
             Flash_ClipSetFlags(flash, &ref, 2, 0);
         }
     }
+#ifdef BT3_MOD_DBZT4
+    /* The mod replaces this inline chooser with the shared routine (DBZQ 0x3C615C, site 0x36C908)
+       and shows seven plates, the chosen one lit. */
+    Bt4_DrawColorPlates(flash, gSoloSel->colorCount, SS_CUR.costume);
+#else
     for (i = 0; i < 4; i++) {
         /* costume plates */
         uv.x0 = (i % 2) * 0x40;
@@ -386,6 +396,7 @@ void SoloSel_Draw(void) {
             Flash_ClipSetFlags(flash, &ref, 2, 0);
         }
     }
+#endif
     flash = &gSoloSel->flash[1];
     uv.x0 = 0;
     uv.y0 = 0;

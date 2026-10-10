@@ -803,6 +803,58 @@ void CharSel_Term(void) {
     }
 }
 
+#ifdef BT3_MOD_DBZT4
+/* The mod hoists the colour-plate chooser of every screen into this one routine (DBZQ 0x3C615C,
+   reached from each *_Draw through its own field offsets).  Two things differ from the USA loops it
+   replaces:
+     - it lays out seven plates instead of four (the extra costumes the mod adds);
+     - a plate is "on" when the side has *chosen* it -- the same value the plate's text uses --
+       instead of merely existing (i < count).
+   The left/right arrows are drawn too, and only when the side offers at least two plates.
+   Note: the mod's arrow loop multiplies the index by 0x20 with rd = 0, so the product is lost and
+   both arrows would get the right half's uv; the intent (i * 0x20) is used here. */
+#define BT4_COLOR_PLATES 7
+
+void Bt4_DrawColorPlates(MFlash *f, s32 count, s32 chosen) {
+    MFlashRef ref;
+    MFlashUv uv;
+    char name[32];
+    s32 i;
+
+    for (i = 0; i < BT4_COLOR_PLATES; i++) {
+        uv.x0 = (i % 2) * 0x40;
+        uv.y0 = (i / 2) * 0x20;
+        uv.x1 = uv.x0 + 0x40;
+        uv.y1 = uv.y0 + 0x20;
+        sprintf(name, "mc_color_plate_%d", i + 1);
+        Flash_FindLabel(f, NULL, name, &ref);
+        if (i == chosen) {
+            Flash_ClipSetFlags(f, &ref, 2, 1);
+            Flash_FindLabel(f, name, "mc_color_text_off", &ref);
+            Flash_ClipSetUv(f, &ref, &uv);
+            Flash_FindLabel(f, name, "mc_color_text_on", &ref);
+            Flash_ClipSetUv(f, &ref, &uv);
+        } else {
+            Flash_ClipSetFlags(f, &ref, 2, 0);
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        uv.x0 = i * 0x20;
+        uv.y0 = 0;
+        uv.x1 = uv.x0 + 0x20;
+        uv.y1 = 0x20;
+        Flash_FindLabel(f, i != 0 ? "mc_yajirusi_right" : "mc_yajirusi_left",
+                        i != 0 ? "mc_yajirusi_icon_right" : "mc_yajirusi_icon_left", &ref);
+        if (count < 2) {
+            Flash_ClipSetFlags(f, &ref, 2, 0);
+        } else {
+            Flash_ClipSetUv(f, &ref, &uv);
+            Flash_ClipSetFlags(f, &ref, 2, 1);
+        }
+    }
+}
+#endif
+
 /* Draws the screen: the stage picture cross fade, then the labels, texture rectangles and visibility of every
    clip of the five movies are set from the state, the movies are drawn, then the windows and the side panels. */
 void CharSel_Draw(void) {
