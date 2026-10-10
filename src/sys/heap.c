@@ -1,13 +1,12 @@
 #include "common.h"
 #include "sys/heap.h"
 #ifdef PORT
-/* For the heap checker below.  No <stdio.h> or <stdlib.h> here on purpose: this file declares the
-   game's own malloc (u32), which the port's macro turns into Port_Malloc, and the standard
-   headers' malloc would then clash with that declaration.  These few are all the checker needs and
-   they are the only declarations of them in this file, so nothing can disagree. */
-extern int fprintf(void *stream, const char *format, ...);
-extern int fflush(void *stream);
-extern void *stderr;
+/* For the heap checker below.  <stdio.h> for fprintf/stderr/fflush -- stderr is a macro on mingw, so
+   declaring it by hand links against something that is not a FILE pointer and the first message
+   crashes.  <stdlib.h> stays out: this file declares the game's own malloc (u32), which the port's
+   macro turns into Port_Malloc, and stdlib's malloc would clash with that declaration.  The two
+   below are declared by hand for the same reason. */
+#include <stdio.h>
 extern char *getenv(const char *name);
 extern void exit(int status);
 #endif
