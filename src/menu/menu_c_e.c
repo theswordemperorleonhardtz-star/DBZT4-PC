@@ -1669,6 +1669,11 @@ void CharSel_Input(s32 *running) {
                     CS_SIDE->colorPlate = gCharSel->colorCount[CS_N] - 1;
                 }
                 CharSel_ClipGoto(CS_N + 3, CS_N, CHARSEL_CLIP_COLOR_PLATE, "fl_on_start");
+#ifdef BT3_MOD_DBZT4
+                /* The mod's replacement (DBZQ 0x3C6078, site 0x34761C) refreshes the side's portrait
+                   after a colour change, before the shared Snd_PlaySe tail. */
+                CharSel_RequestFace(CS_N);
+#endif
                 Snd_PlaySe(1, 0);
             } else if (gPad[i].gameRepeat & 2) {
                 CharSel_ClipGoto(CS_N + 3, CS_N, CHARSEL_CLIP_COLOR_PLATE, "fl_off_start");
@@ -1677,6 +1682,10 @@ void CharSel_Input(s32 *running) {
                     CS_SIDE->colorPlate = 0;
                 }
                 CharSel_ClipGoto(CS_N + 3, CS_N, CHARSEL_CLIP_COLOR_PLATE, "fl_on_start");
+#ifdef BT3_MOD_DBZT4
+                /* The mod's replacement (DBZQ 0x3C6078, site 0x3476D0): see the branch above. */
+                CharSel_RequestFace(CS_N);
+#endif
                 Snd_PlaySe(1, 0);
             } else if (gPad[i].gamePressed & 0x200) {
                 CS_SIDE->mask = 0;
