@@ -38,6 +38,23 @@ void CharRef_Draw(void);
     Res_RelocateOffsets(&res, res, res)
 
 /* Loads and unpacks the screen (section `section` of archive 9) and builds the character list. */
+#ifdef BT3_MOD_DBZT4
+/* The mod's initial portrait (DBZQ 0x3C55F8, reached from CharRef_Init+0x678): the file of the
+   character the list is on -- 40-character stride -- at the chosen costume, or 1586 when the probe
+   reads 0x800.  The disassembly adds a1 where the stride register s1 belongs; with s1 the whole
+   sequence reads as base + slot + costume, exactly like the .extra resource helpers. */
+extern u32 Bt4_FileSizePt(s32 pt, s32 index);   /* btl_obj.c */
+
+s32 Bt4_CharRefImageFile(void) {
+    s32 off = gCharRef->cursor * 40 + gCharRef->costume;
+
+    if ((Bt4_FileSizePt(1, off + 3565) ^ 0x800) != 0) {
+        return off + 0x1123D;
+    }
+    return 1586;
+}
+#endif
+
 void CharRef_Init(s32 section) {
     MTexRes *res = NULL;
     s32 *table;
@@ -115,7 +132,12 @@ void CharRef_Init(s32 section) {
     gCharRef->charaTbl = table;
     gCharRef->imageFile = Heap_Alloc(CHARREF_IMAGE_SIZE, 0x40, 0, 2);
     gCharRef->imageRes = Heap_Alloc(0x20800, 0x20, 0, 2);
+#ifdef BT3_MOD_DBZT4
+    /* The mod picks the file through its own helper (DBZQ 0x3C55F8, site 0x356930). */
+    File_LoadSync(Bt4_CharRefImageFile(), gCharRef->imageFile, CHARREF_IMAGE_SIZE);
+#else
     File_LoadSync(CHARREF_IMAGE_FILE, gCharRef->imageFile, CHARREF_IMAGE_SIZE);
+#endif
     Sprite_Unpack(gCharRef->imageFile, gCharRef->imageRes, NULL);
     res = gCharRef->imageRes;
     Res_RelocateOffsets(&res, res, res);
