@@ -236,7 +236,17 @@ void Bgm_PlayEx(s32 id, s32 vol, s32 pan) {
 
 /* Plays music file `id` at the default music volume, centred. */
 void Bgm_Play(s32 id) {
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (fragment 0x3BFAD0): a track above 0x10B29 is one it moved
+       (id += 0x66D) and plays at volume 0x60 instead of 0x40. */
+    if (id > 0x10B29) {
+        Bgm_PlayEx(id + 0x66D, 0x60, 0);
+    } else {
+        Bgm_PlayEx(id, 0x40, 0);
+    }
+#else
     Bgm_PlayEx(id, 0x40, 0);
+#endif
 }
 
 /* Stops the BGM player. */
