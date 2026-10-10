@@ -4,8 +4,8 @@
 // window (setup.cpp) shows both the same way.
 //
 //   disc image   ISO 9660: the volume descriptor at sector 16, directory records from the root
-//   checks       SHA-1 of BIN/DBZP.BIN and of SLUS_216.78 laid out as a flat image from 0x100000 (the values of
-//                config/DBZP.yaml and config/SLUS_216.78.yaml)
+//   checks       SHA-1 of BIN/DBZP.BIN and of SLUS_219.22 laid out as a flat image from 0x100000 (the values
+//                config/DBZP.yaml and config/SLUS_219.22.yaml carry for the Brazilian release)
 //   game data    gamedata/disc/<loose files>, and every DATA/*.AFS archive split into gamedata/<name>/00000.bin ...
 //                (the layout of port/tools/extract_disc.py)
 #include <stdio.h>
@@ -256,7 +256,7 @@ void step_disc(Iso &iso, const std::string &path) {
                    "This build needs the Brazilian DBZT4 1.8 (V2) release (SLUS-21922); the USA release, "
                    "another dump of it, or a damaged image will not work."};
     }
-    say("@ok the USA release, checksums match");
+    say("@ok the Brazilian DBZT4 1.8 (V2) release, checksums match");
 }
 
 void step_data(Iso &iso, const std::string &root) {
