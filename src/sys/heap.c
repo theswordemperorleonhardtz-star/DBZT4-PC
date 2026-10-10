@@ -251,7 +251,6 @@ HeapBlock *Heap_AllocBlock(s32 size, u32 align, s32 fromTail, s32 heap) {
     HeapBlock *free;
     s32 need;
 
-    HEAP_CHECK("alloc:enter", heap, size, align, fromTail, __builtin_return_address(0));
     if (size <= 0) {
         return NULL;
     }
@@ -280,12 +279,10 @@ HeapBlock *Heap_AllocBlock(s32 size, u32 align, s32 fromTail, s32 heap) {
         need = block->size;
     }
     Heap_InitUsedBlock(block, need, size, align, fromTail);
-    HEAP_CHECK("alloc:leave", heap, size, align, fromTail, __builtin_return_address(0));
     return block;
 }
 
 void Heap_FreeBlock(HeapBlock *block) {
-    HEAP_CHECK("free:enter", HEAP_ANY, 0, 0, 0, __builtin_return_address(0));
     HeapBlock *prev;
     HeapBlock *next;
     s32 merge = 0;
@@ -318,7 +315,6 @@ void Heap_FreeBlock(HeapBlock *block) {
         *(s32 *)((u8 *)prev + prev->size - 4) = prev->size;
         break;
     }
-    HEAP_CHECK("free:leave", HEAP_ANY, 0, 0, 0, __builtin_return_address(0));
 }
 
 void Heap_Init(void) {
@@ -329,18 +325,24 @@ void Heap_Init(void) {
 }
 
 void *Heap_Alloc(s32 size, u32 align, s32 fromTail, s32 heap) {
-    HeapBlock *block = Heap_AllocBlock(size, align, fromTail, heap);
+    HeapBlock *block;
     void *data = NULL;
 
+    /* Here return_address(0) is the game's own call, which is what names the culprit: inside
+       Heap_AllocBlock it would only be this function. */
+    HEAP_CHECK("alloc:enter", heap, size, align, fromTail, __builtin_return_address(0));
+    block = Heap_AllocBlock(size, align, fromTail, heap);
     if (block != NULL) {
         data = (void *)block->data;
     }
+    HEAP_CHECK("alloc:leave", heap, size, align, fromTail, __builtin_return_address(0));
     return data;
 }
 
 void Heap_Free(void *ptr) {
     HeapBlock *block;
 
+    HEAP_CHECK("free:enter", HEAP_ANY, 0, 0, 0, __builtin_return_address(0));
 #ifdef PORT
     {
         /* PC build: a block that is not the heap's (a large stage buffer, battle_load.c) goes back to the port */
@@ -356,6 +358,7 @@ void Heap_Free(void *ptr) {
         Heap_ReportBadFree();
     }
     Heap_FreeBlock(block);
+    HEAP_CHECK("free:leave", HEAP_ANY, 0, 0, 0, __builtin_return_address(0));
 }
 
 void Heap_SetDebugValue(s32 value);
