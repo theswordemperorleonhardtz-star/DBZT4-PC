@@ -323,7 +323,13 @@ void Voice_PlayCharaEx(s32 voice, s32 chara, s32 line, s32 vol, s32 pan) {
 
 /* Plays a character voice line at full volume, centred. */
 void Voice_PlayChara(s32 voice, s32 chara, s32 line) {
+#ifdef BT3_MOD_DBZT4
+    /* DBZQ 0x3C4D50 replaces this function's call to Voice_PlayCharaEx (site 0x265EAC): it builds
+       the id from the normal voice set only, so the alternate set is never used from here. */
+    Adx_Play(voice + ADX_CH_VOICE0, VOICE_CHARA_BASE + (chara * VOICE_CHARA_LINES + line), ADX_VOL_MAX, 0);
+#else
     Voice_PlayCharaEx(voice, chara, line, ADX_VOL_MAX, 0);
+#endif
 }
 
 /* Plays file `id` on voice player `voice` (0 or 1). */
