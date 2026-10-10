@@ -1352,8 +1352,31 @@ s32 BtlParam_GetUnkAC(BtlTechChr *chr) {
 
 /* Parameter +0x98 + slot: transformation target, 0xFF = none. */
 s32 BtlParam_GetSlotId(BtlTechChr *chr, s32 slot) {
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (DBZQ 0x3C4E1C, called from BtlAct_CanTransform / QueueTransform /
+       BtlCtrl_Transform): when the u8 table holds 0 the target comes from a u16 table at +0xD0
+       instead, read doubled for slots above 0. Its own copy also nops the caller's 0xFF test. */
+    u8 *p = (u8 *)BtlChar_GetObj(chr)->param;
+
+    if (p[0x98 + slot] != 0) {
+        return p[0x98 + slot];
+    }
+    if (slot > 0) {
+        return *(s16 *)(p + 0xD0 + slot * 2);
+    }
+    return *(s16 *)(p + 0xD0);
+#else
     return BtlChar_GetObj(chr)->param->transTarget[slot];
+#endif
 }
+
+#ifdef BT3_MOD_DBZT4
+/* Non-zero while the slot's own u8 entry is set: the mod's own copy of BtlAct_CanTransform skips its
+   0xFF test exactly then (DBZQ 0x3C4E1C rewrites that instruction in place). */
+s32 BtlParam_GetSlotIdDirect(BtlTechChr *chr, s32 slot) {
+    return ((u8 *)BtlChar_GetObj(chr)->param)[0x98 + slot] != 0;
+}
+#endif
 
 /* Parameter +0x9C + slot, times 100000: blast gauge a transformation costs. */
 s32 BtlParam_GetSlotCost(BtlTechChr *chr, s32 slot) {

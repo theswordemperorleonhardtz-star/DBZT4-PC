@@ -60,7 +60,10 @@ extern s32 BtlDecide_QueueAttack(BtlActJChr *chr, s32 attack); /* builds the que
 
 /* Character parameter block (object + 0x91C) readers. */
 extern s32 BtlParam_GetUnkAC(BtlActJChr *chr);                       /* s8 + 0xAC: default transformation index */
-extern s32 BtlParam_GetSlotId(BtlActJChr *chr, s32 index);            /* u8 + 0x98[index]: transformation target character, 0xFF = none */
+extern s32 BtlParam_GetSlotId(BtlActJChr *chr, s32 index);
+#ifdef BT3_MOD_DBZT4
+extern s32 BtlParam_GetSlotIdDirect(BtlActJChr *chr, s32 index); /* non-zero when the u8 entry is set */
+#endif            /* u8 + 0x98[index]: transformation target character, 0xFF = none */
 extern s32 BtlParam_GetSlotCost(BtlActJChr *chr, s32 index);            /* u8 + 0x9C[index] * 100000: transformation blast cost */
 extern s32 BtlParam_GetSlotA0(BtlActJChr *chr, s32 index);            /* u8 + 0xA0[index]: transformation sequence 0..4 */
 extern s32 BtlParam_GetSlotA4(BtlActJChr *chr, s32 index);            /* u8 + 0xA4[index]: transformation kind (3 needs the stage flag) */
@@ -214,9 +217,17 @@ s32 BtlAct_CanTransform(BtlActJChr *chr, u32 index, s32 needBlast, s32 needAllow
     chara = BtlParam_GetSlotId(chr, index);
     cost = BtlParam_GetSlotCost(chr, index);
     kind = BtlParam_GetSlotA4(chr, index);
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (DBZQ 0x3C4E1C) nops this test out of its own code while the slot's u8
+       entry is 0, that is while the target came from the u16 table. */
+    if (chara == 0xFF && BtlParam_GetSlotIdDirect(chr, index)) {
+        return 0;
+    }
+#else
     if (chara == 0xFF) {
         return 0;
     }
+#endif
     if (!BattleSide_IsCharaUsable(chr->player, chara)) {
         return 0;
     }

@@ -2219,5 +2219,12 @@ void BattleSide_SetMemberItems(s32 side, s32 idx, BattleItemSet *items) {
 s32 BattleSide_IsCharaUsable(s32 side, s32 chara) {
     u64 *bits = Side(side)->charaBits.bits;
 
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (DBZQ 0x3C4E94, site 0x12B504): the characters it adds are past the
+       end of the save data's bit field and are always usable. */
+    if (chara >= 165) {
+        return 1;
+    }
+#endif
     return (bits[chara / 64] >> (chara % 64)) & 1;
 }
