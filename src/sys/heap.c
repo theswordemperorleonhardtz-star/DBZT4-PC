@@ -1,5 +1,9 @@
 #include "common.h"
 #include "sys/heap.h"
+#ifdef PORT
+#include <stdio.h>   /* the heap checker below */
+#include <stdlib.h>
+#endif
 
 extern void *malloc(u32 size);
 s32 Mem_Align4Pad(u32 value);
@@ -161,11 +165,58 @@ HeapBlock *Heap_FindFreeFromTail(s32 heap, s32 size) {
     return found;
 }
 
+#ifdef PORT
+/* Debug help for this port.  The allocator walks its blocks by their own size fields
+   (Heap_NextBlock), so one buffer that writes past its block tears the heap apart and the crash
+   shows up much later, in an unrelated allocation (the Brazilian build showed it in StgFx_Init ->
+   Heap_Alloc).  With BT3_HEAP_CHECK=1 every allocation and free walks every heap, and the first
+   operation that finds it broken prints itself and the last one that was still fine.  Both are PC
+   addresses: name them with the same build's map,
+       python3 _bt4pc/tools/symbolize.py bt3.exe.map <the crash report>
+   Off unless the variable is set, so a normal run pays nothing. */
+static int gHeapCheckOn = -1;
+static const void *gHeapLastOk;
+static const char *gHeapLastWhat = "start";
+
+static void Heap_CheckAll(const char *what, const void *ret) {
+    s32 h;
+
+    for (h = 0; h < HEAP_COUNT; h++) {
+        u8 *lo = (u8 *)gHeapStart[h];
+        u8 *hi = (u8 *)gHeapEnd[h];
+        HeapBlock *block = gHeapStart[h];
+        s32 guard = 0;
+
+        while (block != NULL) {
+            if ((u8 *)block < lo || (u8 *)block + 0x20 > hi || block->magic != HEAP_MAGIC ||
+                block->size < 0x20 || block->size > (s32)(hi - (u8 *)block) || ++guard > 200000) {
+                fprintf(stderr,
+                        "bt3: HEAP BROKEN in heap %d: %s (called from %p); the last operation that was still fine: %s (called from %p)\n",
+                        (int)h, what, ret, gHeapLastWhat, gHeapLastOk);
+                fflush(stderr);
+                exit(3);
+            }
+            block = Heap_NextBlock(block);
+        }
+    }
+    gHeapLastOk = ret;
+    gHeapLastWhat = what;
+}
+
+#define HEAP_CHECK(tag, ret) do { \
+        if (gHeapCheckOn < 0) { gHeapCheckOn = getenv("BT3_HEAP_CHECK") != NULL; } \
+        if (gHeapCheckOn) { Heap_CheckAll((tag), (const void *)(ret)); } \
+    } while (0)
+#else
+#define HEAP_CHECK(tag, ret) do { } while (0)
+#endif
+
 HeapBlock *Heap_AllocBlock(s32 size, u32 align, s32 fromTail, s32 heap) {
     HeapBlock *block;
     HeapBlock *free;
     s32 need;
 
+    HEAP_CHECK("alloc:enter", __builtin_return_address(0));
     if (size <= 0) {
         return NULL;
     }
@@ -194,10 +245,12 @@ HeapBlock *Heap_AllocBlock(s32 size, u32 align, s32 fromTail, s32 heap) {
         need = block->size;
     }
     Heap_InitUsedBlock(block, need, size, align, fromTail);
+    HEAP_CHECK("alloc:leave", __builtin_return_address(0));
     return block;
 }
 
 void Heap_FreeBlock(HeapBlock *block) {
+    HEAP_CHECK("free:enter", __builtin_return_address(0));
     HeapBlock *prev;
     HeapBlock *next;
     s32 merge = 0;
@@ -230,6 +283,7 @@ void Heap_FreeBlock(HeapBlock *block) {
         *(s32 *)((u8 *)prev + prev->size - 4) = prev->size;
         break;
     }
+    HEAP_CHECK("free:leave", __builtin_return_address(0));
 }
 
 void Heap_Init(void) {
