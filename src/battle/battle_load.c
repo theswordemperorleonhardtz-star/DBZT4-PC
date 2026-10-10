@@ -393,6 +393,64 @@ s32 BtlLoad_StepObject(BtlJob *job) {
     return 0;
 }
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's replacement for BtlLoad_StepObject (injected function 0x3BF500), installed by
+ * BtlLoad_PollObjectRequest as the job step.  It differs from the USA one in two places
+ * (see _bt4pc/worklist/EXTRA_SEMANTICS.md):
+ *   - the object's file id always comes from Bt4_CharaResModel(chara, animChara, unk1C);
+ *     the byte the injected code tests at 0x3C2798 is the constant 0xFF, so the
+ *     "chara + BTL_FILE_OBJECT" branch is dead.
+ *   - kind 0 plays the animation with BtlObjAnim_PlayAuto instead of BtlObjAnim_PlayModel. */
+extern s32 Bt4_CharaResModel(s32 chara, s32 a1, s32 a2);
+
+s32 Bt4_BtlLoad_StepObject(BtlJob *job) {
+    s32 id;
+    s32 ready;
+
+    switch (job->state) {
+    case 0:
+        Battle_GetWork()->flags |= BATTLE_FLAG_LOAD_OBJECT;
+        id = Bt4_CharaResModel(job->chara, job->animChara, job->unk1C);
+        gBtlLoadHandle = BtlRes_Request(0, id, -1, -1);
+        job->state++;
+        return 0;
+    case 1:
+        if (!File_UpdateRequests()) {
+            return 0;
+        }
+        if (job->kind == BTL_JOB_KIND_OBJECT) {
+            BtlChange_NotifyLoaded();
+        }
+        job->state++;
+        break;
+    case 2:
+        ready = 1;
+        if (Battle_GetWork()->flags & BATTLE_FLAG_PAUSE) {
+            return 0;
+        }
+        if (job->kind == BTL_JOB_KIND_OBJECT) {
+            ready = BtlChange_IsReady();
+        }
+        if (!ready) {
+            return 0;
+        }
+        if (job->kind == 0) {
+            gBtlLoadObj = BtlObj_Create(2, BtlRes_GetSlot(gBtlLoadHandle), 1);
+            BtlObjAnim_PlayAuto(BtlObj_Get(gBtlLoadObj), 0, 2);
+        } else if (job->kind == BTL_JOB_KIND_OBJECT) {
+            gBtlLoadObj = BtlObj_Create(job->costume, BtlRes_GetSlot(gBtlLoadHandle), 1);
+            BtlCtrl_AttachPartner(job->side, gBtlLoadHandle, gBtlLoadObj);
+        }
+        Battle_GetWork()->flags &= ~BATTLE_FLAG_LOAD_OBJECT;
+        BtlJob_Free(job);
+        return 1;
+    default:
+        return 1;
+    }
+    return 0;
+}
+#endif
+
 /* Job: loads a side's character (model, voice bank, data block) and swaps it in. */
 s32 BtlLoad_StepChara(BtlJob *job) {
     BattleRes *res = BATTLE_RES;
@@ -803,7 +861,11 @@ void BtlLoad_PollObjectRequest(void) {
             BtlChange_GetArgs(&id, &costume, &variant, NULL, NULL, NULL, &slot);
             job = BtlJob_Alloc();
             memset(job, 0, sizeof(BtlJob));
+#ifdef BT3_MOD_DBZT4
+            job->step = Bt4_BtlLoad_StepObject;
+#else
             job->step = BtlLoad_StepObject;
+#endif
             job->side = side;
             job->kind = BTL_JOB_KIND_OBJECT;
             job->costume = slot;
