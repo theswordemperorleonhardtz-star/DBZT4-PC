@@ -793,7 +793,14 @@ void StgGrid_MoveUp(s32 *ids, s32 *col, s32 *row, s32 rows) {
     }
 }
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's added characters (ids >= 165) have no bit in the save data: ChrGrid_Build's two
+   replacements (DBZQ 0x3C6140 at site 0x25F758 and 0x3C6114 at site 0x25F87C) treat them as
+   always unlocked instead of testing the bit. */
+#define CHARA_UNLOCKED(id) ((id) >= 165 ? 1 : (s32)((SAVE_CHARA_WORD(gSaveData, id) >> ((id) % 64)) & 1))
+#else
 #define CHARA_UNLOCKED(id) ((s32)((SAVE_CHARA_WORD(gSaveData, id) >> ((id) % 64)) & 1))
+#endif
 
 /* Build flags of ChrGrid_Build. */
 #define CHRGRID_ALL 1        /* no unlock test (never set here) */
