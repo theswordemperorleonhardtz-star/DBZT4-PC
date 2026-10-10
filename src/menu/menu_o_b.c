@@ -155,7 +155,13 @@ void DiscFusion_Draw(void) {
         if (gDiscFusion->have[i]) {
             TextBox_AttachLine(flash, &ref, 0, 0, i + 0x15C, &gDiscFusion->box[i]);
         } else {
-            TextBox_AttachLine(flash, &ref, 0, 0, i + 0x15A, &gDiscFusion->box[i]);
+    #ifdef BT3_MOD_DBZT4
+        /* The mod's replacement (site 0x378A4C) starts the fusion lines two entries further on
+           (0x15A -> 0x15C). */
+        TextBox_AttachLine(flash, &ref, 0, 0, i + 0x15C, &gDiscFusion->box[i]);
+#else
+        TextBox_AttachLine(flash, &ref, 0, 0, i + 0x15A, &gDiscFusion->box[i]);
+#endif
         }
     }
     x = 0;
