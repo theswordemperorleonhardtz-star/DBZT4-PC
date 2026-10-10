@@ -1413,7 +1413,13 @@ s32 BtlSuper_GetDamage(BtlTechBChr *chr, s32 slot, s32 guard, s32 total) {
 
 /* Position and yaw of the technique's cutscene on the current stage, entry n of 5. */
 void BtlSuper_GetStagePlacement(BtlTechBChr *chr, s32 slot, s32 n, Vec4 *pos, Vec4 *rot) {
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (DBZQ 0x3C5310, site 0x211EA4) divides the stage by 35 first: the
+       stages it adds share the placement records of an earlier one instead of reading past the table. */
+    s32 stage = Battle_GetStage() / 35;
+#else
     s32 stage = Battle_GetStage();
+#endif
     BtlTechPlaceTbl *tbl;
 
     if ((u32)(slot - 2) < 3 && (tbl = chr->place[slot - 2]) != NULL) {

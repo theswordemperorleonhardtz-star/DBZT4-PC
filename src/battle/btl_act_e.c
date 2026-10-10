@@ -1330,6 +1330,23 @@ s32 BtlAct_VanishDashHandler(BtlActEChr *chr, s32 phase) {
     }
 }
 
+#ifdef BT3_MOD_DBZT4
+extern s32 Battle_IsSplitScreen(void);
+
+/* The mod's clash input test (DBZQ 0x3C4D88, site 0x1F4930): a CPU fighter in a single-screen
+ * battle keeps input condition 0x33; anyone else is tested with condition 0x21 instead and, on
+ * every other frame of the clash, an opponent mark is counted before the test. */
+static s32 Bt4_ClashBlowTest(BtlActEChr *chr) {
+    if (!Battle_IsSplitScreen() && chr->injected > 0) {
+        return BtlInput_TestAction(chr, 0x33, 1);
+    }
+    if (chr->clashCountB % 2 == 0) {
+        BtlAct_CountAndMarkOpponent(chr);
+    }
+    return BtlInput_TestAction(chr, 0x21, 1);
+}
+#endif
+
 /*
  * Action 0xFA (forced by flag 0x61): clash B, the two fighters trading blows. Every accepted input
  * (input condition 0x33) adds to clashCountB; abilities and a technique in progress add more on a
@@ -1364,7 +1381,11 @@ void BtlAct_ClashBlowsHandler(BtlActEChr *chr, s32 phase) {
                 BtlAnim_AdvanceLoop(chr, 0);
                 BtlChar_SetFlag(chr, 0xE6);
                 BtlChar_SetFlag(chr, 0xED);
+#ifdef BT3_MOD_DBZT4
+                if (Bt4_ClashBlowTest(chr)) {
+#else
                 if (BtlInput_TestAction(chr, 0x33, 1)) {
+#endif
                     BtlAct_CountAndMarkOpponent(chr);
 #ifdef PORT /* PC build: BT3_CLASH_LOG=1 */
                     Port_ClashLog(chr->player, "blow clash", 1, chr->clashCountB, chr->actionFrame);
