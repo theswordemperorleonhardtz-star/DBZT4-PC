@@ -128,7 +128,13 @@ void DcMenu_LightPlate(DcMenu *menu, s32 on) {
     char name[0x100];
     MFlash *flash = &menu->view.flash;
 
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (site 0x3A9D34 in DcMenu_LightPlate) wraps from plate 2 on: the first
+       two plates of the menu are no longer reachable with the cursor. */
+    menu->cursor = DcMenu_Wrap(menu->cursor, 2, DCMENU_PLATES - 1);
+#else
     menu->cursor = DcMenu_Wrap(menu->cursor, 0, DCMENU_PLATES - 1);
+#endif
     sprintf(name, "mc_menu_plate_%d", menu->cursor + 1);
     DcMenu_LightClip(flash, name, on);
 }

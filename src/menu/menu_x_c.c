@@ -129,7 +129,12 @@ s32 Option_Init(s32 section) {
         gOption->bgmCount = gOption->res[gOption->res[37] >> 2];
         gOption->bgmCount--;
         gOption->bgmCount -= 4;
+#ifdef BT3_MOD_DBZT4
+        /* The mod nops this call (site 0x3A04B8 in Option_Init): the BGM list of the option menu is
+           not filtered through the save data's unlock bits, every entry of the pack is offered. */
+#else
         BgmList_ApplyUnlocks(&gOption->bgmCount, gOption->bgmIds);
+#endif
         Flash_Create(&gOption->flash[0], MPACK_AT(gOption->res, 8), gOption->tex);
         Flash_Play(&gOption->flash[0], 1);
         /* original bug: `name` is never written, so this looks up whatever the stack holds (the result is unused) */
