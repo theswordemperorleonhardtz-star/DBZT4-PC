@@ -253,7 +253,8 @@ void step_disc(Iso &iso, const std::string &path) {
     b.add(menu.data(), menu.size());
     if (a.hex() != kRomSha1 || b.hex() != kDbzpSha1) {
         throw Stop{"The game's programs on this disc do not have the expected checksums.\n"
-                   "The port needs the unmodified USA release (SLUS-21678); a patched or damaged image will not work."};
+                   "This build needs the Brazilian DBZT4 1.8 (V2) release (SLUS-21922); the USA release, "
+                   "another dump of it, or a damaged image will not work."};
     }
     say("@ok the USA release, checksums match");
 }
