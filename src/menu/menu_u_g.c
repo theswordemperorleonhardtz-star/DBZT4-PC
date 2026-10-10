@@ -11,6 +11,18 @@ UEvoZ *gEvoZ = NULL;
  * (0x3BB140). Names are guesses from what the code does.
  */
 
+#ifdef BT3_MOD_DBZT4
+/* See Bt4_FaceFileFrom in menu_c_e.c.  DBZQ 0x3C68E8 (the synchronous load) and 0x3C69A8 (the
+   request); its helper 0x3C6A68 reads EvoZ + 0x314 (the side pointer) and the tool dropped the
+   field loads.  This screen shows a portrait per character with no costume of its own, so the
+   colour is 0 -- exactly like the USA id "side->chara + 0x2F9". */
+s32 Bt4_EvoZFaceFile(void *ez) {
+    UEvoZ *e = (UEvoZ *)ez;
+
+    return Bt4_FaceFileFrom(0, e->side->chara);
+}
+#endif
+
 /* Allocates the work area, loads the pack, builds the character grid and the item lists. */
 void EvoZ_Init(s32 section) {
     MTexRes *res = 0;
@@ -56,7 +68,12 @@ void EvoZ_Init(s32 section) {
         gEvoZ->list.top[i] = gEvoZ->list.cur[i];
         gEvoZ->list.bottom[i] = gEvoZ->list.cur[i] + gEvoZ->list.rows - 1;
     }
+#ifdef BT3_MOD_DBZT4
+    /* The mod loads through its own helper (DBZQ 0x3C68E8, site 0x393328). */
+    File_LoadSync(Bt4_EvoZFaceFile(gEvoZ), gEvoZ->faceFile, 0x16800);
+#else
     File_LoadSync(gEvoZ->side->chara + 0x2F9, gEvoZ->faceFile, 0x16800);
+#endif
     Sprite_Unpack(gEvoZ->faceFile, gEvoZ->faceRes, 0);
     res = gEvoZ->faceRes;
     Res_RelocateOffsets(&res, res, res);

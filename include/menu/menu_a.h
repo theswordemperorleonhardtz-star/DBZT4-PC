@@ -17,6 +17,10 @@
 s32 Bt4_FaceFileFrom(s32 color, s32 chara);
 s32 Bt4_CharSelFaceFile(s32 side);
 s32 Bt4_TeamSelFaceFile(s32 side);
+s32 Bt4_SoloSelFaceFile(void);
+/* Takes the screen pointer; the two views of it (UEvoZ / EvoZ) have the side and its chara at the
+   same offsets, so the parameter is untyped. */
+s32 Bt4_EvoZFaceFile(void *ez);
 
 #define BT4_STAGE_PIC_FILE(stage) \
     ((stage) < 0x24 ? (stage) + 925 : \

@@ -56,6 +56,17 @@ void SoloSel_SetRowTex(void) {
 }
 
 /* One step of the background loader of the large picture (file 0x2F9 + character). */
+#ifdef BT3_MOD_DBZT4
+/* See Bt4_FaceFileFrom in menu_c_e.c.  DBZQ 0x3C6A88 (the synchronous load) and 0x3C6B90 (the
+   request) with the helper 0x3C70E4, which the tool left with one field load: the state's costume
+   (SoloSelState + 0x18) and its image character (+ 0x6C). */
+s32 Bt4_SoloSelFaceFile(void) {
+    SoloSelState *s = gSoloSel->sel;
+
+    return Bt4_FaceFileFrom(s->entry.costume, s->image);
+}
+#endif
+
 void SoloSel_UpdateImage(void) {
     MTexRes *res;
 
@@ -71,7 +82,12 @@ void SoloSel_UpdateImage(void) {
         break;
     case SOLOSEL_LOAD_REQUEST:
         File_CancelRequests();
-        File_Request(gSoloSel->sel->image + 0x2F9, gSoloSel->imageFile, 0x16800);
+    #ifdef BT3_MOD_DBZT4
+    /* The mod requests through its own helper (DBZQ 0x3C6B90, site 0x36B6D8). */
+    File_Request(Bt4_SoloSelFaceFile(), gSoloSel->imageFile, 0x16800);
+#else
+    File_Request(gSoloSel->sel->image + 0x2F9, gSoloSel->imageFile, 0x16800);
+#endif
         gSoloSel->loadState = SOLOSEL_LOAD_READ;
         break;
     case SOLOSEL_LOAD_READ:
@@ -255,7 +271,12 @@ void SoloSel_Init(s32 section) {
         gSoloSel->blink[i] = Rand_Range(0x20);
     }
     gSoloSel->voiceLine = -1;
+#ifdef BT3_MOD_DBZT4
+    /* The mod loads through its own helper (DBZQ 0x3C6A88, site 0x36C3B0). */
+    File_LoadSync(Bt4_SoloSelFaceFile(), gSoloSel->imageFile, 0x16800);
+#else
     File_LoadSync(gSoloSel->sel->image + 0x2F9, gSoloSel->imageFile, 0x16800);
+#endif
     Sprite_Unpack(gSoloSel->imageFile, gSoloSel->imageRes, NULL);
     res = gSoloSel->imageRes;
     Res_RelocateOffsets(&res, res, res);

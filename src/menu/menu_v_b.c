@@ -747,7 +747,12 @@ void EvoZ_UpdateFace(EvoZ *ez) {
         break;
     case 1:
         File_CancelRequests();
+#ifdef BT3_MOD_DBZT4
+        /* The mod requests through its own helper (DBZQ 0x3C69A8, site 0x398E4C). */
+        File_Request(Bt4_EvoZFaceFile(ez), ez->faceFile, 0x16800);
+#else
         File_Request(ez->side->chara + 0x2F9, ez->faceFile, 0x16800);
+#endif
         ez->faceState = 2;
         break;
     case 2:
