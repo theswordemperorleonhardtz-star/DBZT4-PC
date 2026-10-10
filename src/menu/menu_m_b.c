@@ -151,6 +151,21 @@ void UbTeamSel_SetTeamTex(void) {
 }
 
 /* One step of the background loader of the portrait (file 0x2F9 + character). */
+#ifdef BT3_MOD_DBZT4
+/* See Bt4_FaceFileFrom in menu_c_e.c.  DBZQ 0x3C6C98 (the synchronous load) and 0x3C6DA0 (the
+   request) with the helper 0x3C70FC: the same as the team select -- the colour of the member the
+   cursor is on, with cur 5, the menu plate, counting as member 0 -- and the shown character. */
+s32 Bt4_UbTeamSelFaceFile(void) {
+    UbTeamState *s = gUbTeamSel->sel;
+    s32 cur = s->cur;
+
+    if (cur >= 4) {
+        cur = 0;
+    }
+    return Bt4_FaceFileFrom(s->team.member[cur].color, s->chara);
+}
+#endif
+
 void UbTeamSel_UpdateFaceLoad(void) {
     MTexRes *res;
 
@@ -171,7 +186,12 @@ void UbTeamSel_UpdateFaceLoad(void) {
             gUbTeamSel->sel->flags |= UBTEAM_SEL_FACE_READY;
             gUbTeamSel->loadState = UBSEL_LOAD_IDLE;
         } else {
-            File_Request(gUbTeamSel->sel->chara + UB_FACE_FILE, gUbTeamSel->faceFile, 0x16800);
+        #ifdef BT3_MOD_DBZT4
+    /* The mod requests through its own helper (DBZQ 0x3C6DA0, site 0x36E878). */
+    File_Request(Bt4_UbTeamSelFaceFile(), gUbTeamSel->faceFile, 0x16800);
+#else
+    File_Request(gUbTeamSel->sel->chara + UB_FACE_FILE, gUbTeamSel->faceFile, 0x16800);
+#endif
             gUbTeamSel->loadState = UBSEL_LOAD_READ;
         }
         break;
@@ -422,7 +442,12 @@ void UbTeamSel_Init(s32 section) {
         gUbTeamSel->blink[i] = Rand_Range(0x20);
     }
     gUbTeamSel->voiceLine = -1;
+#ifdef BT3_MOD_DBZT4
+    /* The mod loads through its own helper (DBZQ 0x3C6C98, site 0x36F998). */
+    File_LoadSync(Bt4_UbTeamSelFaceFile(), gUbTeamSel->faceFile, 0x16800);
+#else
     File_LoadSync(gUbTeamSel->sel->chara + UB_FACE_FILE, gUbTeamSel->faceFile, 0x16800);
+#endif
     Sprite_Unpack(gUbTeamSel->faceFile, gUbTeamSel->faceRes, NULL);
     res = gUbTeamSel->faceRes;
     Res_RelocateOffsets(&res, res, res);
