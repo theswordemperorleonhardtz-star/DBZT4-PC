@@ -540,7 +540,12 @@ void EvoZ_Load(UEvoZ *ez, s32 section) {
 
     ez->pack = (u32 *)MPACK_AT(gMenuArc7, section);
     ez->res = Sprite_Unpack(ez->pack, NULL, NULL);
+#ifdef BT3_MOD_DBZT4
+    /* The mod's replacement (site 0x395E98) loads the chip pack from file 0x3A2 instead of 0x3C0. */
+    ez->chipFile = File_LoadSync(0x3A2, NULL, 0);
+#else
     ez->chipFile = File_LoadSync(0x3C0, NULL, 0);
+#endif
     ez->chipRes = Sprite_Unpack(ez->chipFile, NULL, NULL);
     res = ez->chipRes;
     Res_RelocateOffsets(&res, res, res);
