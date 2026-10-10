@@ -1,5 +1,8 @@
 #include "common.h"
 #include "battle/btl_tech_b.h"
+#ifdef BT3_MOD_DBZT4
+extern u8 gBt4ResFlag2798; /* defined in battle_load.c: the mod's flag byte at 0x3C2798 */
+#endif
 
 /*
  * Character data accessors, 0x20F0E8..0x2129C8 (the continuation of btl_tech_a.c; see include/battle/btl_tech_b.h
@@ -1227,6 +1230,16 @@ s32 BtlSuper_GetThrowChara(BtlTechBChr *chr, s32 slot) {
     s32 alt = tbl->throwCharaAlt[i];
 
     if (obj->chara != chara) {
+#ifdef BT3_MOD_DBZT4
+        /* The mod's replacement (DBZQ 0x3C4EC4) also drives the resource flag byte at 0x3C2798:
+           a throw character of 0 raises it, an id of 0x100 and above lowers it. The block also
+           remaps chara 0 to a table entry 35 slots further on; that part is still to be decoded. */
+        if (chara == 0) {
+            gBt4ResFlag2798 = 1;
+        } else if (chara >= 0x100) {
+            gBt4ResFlag2798 = 0;
+        }
+#endif
         if (chara >= 0x100 && (tbl->flags[i] & 0x40000000)) {
             if (BtlMember_GetActive(chr)->costume == 1) {
                 return alt;
