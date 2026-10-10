@@ -436,12 +436,23 @@ FileReqQueue *File_GetRequestQueue(void) {
 
 /* Opens file `id`, translating the global id into (partition, index). */
 ADXF File_OpenById(s32 id) {
+#ifdef BT3_MOD_DBZT4
+    if (id > FILE_MOD_BIG_ID_FIRST) { /* the mod's added files, appended to partition 1 */
+        return ADXF_OpenAfs(1, id - FILE_MOD_BIG_ID_BASE);
+    }
+#endif
     return ADXF_OpenAfs(id <= 0 ? 0 : id < FILE_PT2_FIRST_ID ? 1 : 2,
                         id <= 0 ? id : id < FILE_PT2_FIRST_ID ? id - FILE_PT1_FIRST_ID : id - FILE_PT2_FIRST_ID);
 }
 
 /* Starts streaming file `id` on an ADXT player, with the same id translation as File_OpenById. */
 void File_StartAdxById(ADXT_HN adxt, s32 id) {
+#ifdef BT3_MOD_DBZT4
+    if (id > FILE_MOD_BIG_ID_FIRST) { /* same high range as File_OpenById */
+        ADXT_StartAfs(adxt, 1, id - FILE_MOD_BIG_ID_BASE);
+        return;
+    }
+#endif
     ADXT_StartAfs(adxt, id <= 0 ? 0 : id < FILE_PT2_FIRST_ID ? 1 : 2,
                   id <= 0 ? id : id < FILE_PT2_FIRST_ID ? id - FILE_PT1_FIRST_ID : id - FILE_PT2_FIRST_ID);
 }

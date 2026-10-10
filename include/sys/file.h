@@ -11,6 +11,15 @@
 #define FILE_PT1_FIRST_ID 1     /* ids <= 0 are entries of partition 0 */
 #define FILE_PT2_FIRST_ID 0xD48 /* ids 1..0xD47 are partition 1, the rest partition 2 */
 #define FILE_PT_COUNT 3
+#ifdef BT3_MOD_DBZT4
+/* Brazilian DBZT4 1.8 (V2).  The mod's replacement File_OpenById (in the .extra
+ * section it injects at 0x3BE720) keeps the USA rules above and adds a high id
+ * range that addresses the 11614 files the mod appended to partition 1:
+ *     id > 70000  ->  partition 1, index = id - 66640
+ * See port/include/bt4_mod.h and _bt4pc/worklist/FILE_ID_MAPPING.md. */
+#define FILE_MOD_BIG_ID_FIRST 70000
+#define FILE_MOD_BIG_ID_BASE 66640
+#endif
 
 #define ADX_PLAYER_COUNT 6
 

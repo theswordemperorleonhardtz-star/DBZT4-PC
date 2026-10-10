@@ -8,6 +8,13 @@
 
 #define PORT 1
 
+/* This fork builds the PC port for the Brazilian "DBZT4 1.8 (V2)" disc instead
+ * of the clean USA release.  It only adds guarded branches to the shared game
+ * sources (include/sys/file.h, src/sys/file.c); removing this define builds the
+ * USA path again.  The constants and the measured evidence are in
+ * port/include/bt4_mod.h and _bt4pc/worklist/FILE_ID_MAPPING.md. */
+#define BT3_MOD_DBZT4 1
+
 /* The game's types: on the PS2 `long` is 64 bits. Take over include/types.h. */
 #define TYPES_H
 typedef signed char s8;
