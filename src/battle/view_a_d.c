@@ -37,8 +37,8 @@ typedef struct ChrViewCommon {
 
 extern ChrViewBattleWork *Battle_GetWork(void);
 /* BtlRes_LoadSingle comes from battle/btl_obj.h (its slot is a BtlResSlot, not a void *). */
-extern s32 BtlObj_Create(s32 type, void *res, s32 active);
-extern u8 *BtlObj_Get(s32 id);
+/* BtlObj_Create and BtlObj_Get come from battle/btl_obj.h (the slot really is a BtlResSlot and
+   the object a BtlObj *); this file keeps its opaque u8 * handles, so the two calls cast. */
 extern s32 BtlObj_Destroy(s32 id);
 extern void BtlObjAnim_PlayModel(u8 *obj, s32 anim, s32 mode);
 extern void BtlObj_SetPartVisible(u8 *obj, u32 part, s32 on);
@@ -196,8 +196,8 @@ s32 ChrView_StepLoad(ChrViewJob *job) {
         if (File_UpdateRequests() == 0) {
             return 0;
         }
-        job->slot->obj = BtlObj_Create(3, &job->slot->file, 1);
-        job->obj = BtlObj_Get(job->slot->obj);
+        job->slot->obj = BtlObj_Create(3, (BtlResSlot *)&job->slot->file, 1);
+        job->obj = (u8 *)BtlObj_Get(job->slot->obj);
         BtlObjAnim_PlayModel(job->obj, gChrView->anim, 2);
         BTL_OBJ_FLAGS(job->obj) &= ~0x02000000;
         BtlObj_SetPartVisible(job->obj, 0, 0);

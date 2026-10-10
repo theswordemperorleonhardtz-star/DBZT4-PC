@@ -16,6 +16,7 @@
  */
 #include "common.h"
 #include "menu/menu_d.h"
+#include "menu/menu_e.h"   /* TeamSel, for Bt4_TeamSel_InitLinks below */
 
 #ifdef BT3_MOD_DBZT4
 
