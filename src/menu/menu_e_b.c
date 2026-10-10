@@ -1026,7 +1026,13 @@ void TeamSel_Draw(void) {
             Flash_ClipSetFlags(flash, &ref, 0x80, (u8)gTeamSel->side[i]->mask);
             chara = gTeamSel->side[i]->chip[j / cols][j % cols];
             if (gTeamSel->battleType == 2) {
+#ifdef BT3_MOD_DBZT4
+                /* The mod's replacement (DBZQ 0x3C60EC, site 0x34CE04): the characters it adds
+                   (ids 0xA5 and up) count as real ones here and get a cost. */
+                if (chara < TS_RANDOM || chara >= 165) {
+#else
                 if (chara < TS_RANDOM) {
+#endif
                     cost = ChrTbl_GetCost(chara);
                 } else {
                     cost = 0;
