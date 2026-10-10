@@ -834,6 +834,40 @@ void CharRef_MeasureText(void) {
     gCharRef->textHeight = Font_GetHeight((u16 *)MPACK_AT(gCharRef->text[3], e->chara * 2 + 2)) + 4;
 }
 
+#ifdef BT3_MOD_DBZT4
+/* The mod's portrait request (DBZQ 0x3C5680, reached from CharRef_UpdateImage+0xe8, which passes 0
+   as the offset).  It works from the character the list is on -- ids past 160 shift by nine, as
+   everywhere else -- and remembers the last one so that the costume resets when the character
+   changes.  The probe and the 0x1123D / 0x110D5 / 1586 bases are the block the initial load uses
+   (0x3C55F8).  The "s1 == 161" test compares the 40-strided value, so it never fires; that is what
+   the mod does, so it is kept. */
+static s32 Bt4_CharRefLast = -1;
+
+s32 Bt4_CharRefImageFile(void) {
+    s32 costume = gCharRef->costume;
+    s32 slot = gCharRef->cursor;
+    s32 prod;
+    s32 base;
+
+    if (slot >= 161) {
+        slot += 9;
+    }
+    if (slot != Bt4_CharRefLast && costume > 0) {
+        costume = 0;
+    }
+    prod = slot * 40;
+    base = prod < 165 ? 0x1123D : 0x110D5;
+    if (Bt4_FileSizePt(1, base - 66640 + costume) != 2048 && prod != 161) {
+        Bt4_CharRefLast = slot;
+        return base + costume;
+    }
+    if (prod >= 165) {
+        return costume != 0 ? 0x110D5 : 1586;
+    }
+    return prod + 1424;
+}
+#endif
+
 /* One step of the large picture's background loader (the same machine as ModeMenu_UpdateImage). */
 void CharRef_UpdateImage(void) {
     MTexRes *res;
@@ -858,7 +892,12 @@ void CharRef_UpdateImage(void) {
             e = e->next;
         }
         File_CancelRequests();
-        File_Request(e->chara + CHARREF_IMAGE_FILE, gCharRef->imageFile, CHARREF_IMAGE_SIZE);
+    #ifdef BT3_MOD_DBZT4
+    /* The mod requests through its own helper (DBZQ 0x3C5680, site 0x358EA0). */
+    File_Request(Bt4_CharRefImageFile(), gCharRef->imageFile, CHARREF_IMAGE_SIZE);
+#else
+    File_Request(e->chara + CHARREF_IMAGE_FILE, gCharRef->imageFile, CHARREF_IMAGE_SIZE);
+#endif
         gCharRef->loadState = CHARREF_LOAD_READ;
         break;
     case CHARREF_LOAD_READ:
