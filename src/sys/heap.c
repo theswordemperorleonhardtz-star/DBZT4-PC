@@ -185,9 +185,17 @@ static int gHeapCheckOn = -1;
 static const void *gHeapLastOk;
 static const char *gHeapLastWhat = "start";
 
-static void Heap_CheckAll(const char *what, const void *ret) {
+static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 fromTail, const void *ret) {
     s32 h;
 
+    if (heap != HEAP_ANY && (heap < 0 || heap >= HEAP_COUNT)) {
+        fprintf(stderr,
+                "bt3: HEAP ID OUT OF RANGE: %s asked for heap %d (0..%d) size=%d align=%u tail=%d, called from %p;"
+                " the last operation that was still fine: %s (called from %p)\n",
+                what, (int)heap, (int)(HEAP_COUNT - 1), (int)size, align, (int)fromTail, ret, gHeapLastWhat, gHeapLastOk);
+        fflush(stderr);
+        exit(3);
+    }
     for (h = 0; h < HEAP_COUNT; h++) {
         u8 *lo = (u8 *)gHeapStart[h];
         u8 *hi = (u8 *)gHeapEnd[h];
@@ -198,8 +206,9 @@ static void Heap_CheckAll(const char *what, const void *ret) {
             if ((u8 *)block < lo || (u8 *)block + 0x20 > hi || block->magic != HEAP_MAGIC ||
                 block->size < 0x20 || block->size > (s32)(hi - (u8 *)block) || ++guard > 200000) {
                 fprintf(stderr,
-                        "bt3: HEAP BROKEN in heap %d: %s (called from %p); the last operation that was still fine: %s (called from %p)\n",
-                        (int)h, what, ret, gHeapLastWhat, gHeapLastOk);
+                        "bt3: HEAP BROKEN in heap %d: %s (heap=%d size=%d align=%u tail=%d, called from %p);"
+                        " the last operation that was still fine: %s (called from %p)\n",
+                        (int)h, what, (int)heap, (int)size, align, (int)fromTail, ret, gHeapLastWhat, gHeapLastOk);
                 fflush(stderr);
                 exit(3);
             }
@@ -210,12 +219,12 @@ static void Heap_CheckAll(const char *what, const void *ret) {
     gHeapLastWhat = what;
 }
 
-#define HEAP_CHECK(tag, ret) do { \
+#define HEAP_CHECK(tag, heap, size, align, tail, ret) do { \
         if (gHeapCheckOn < 0) { gHeapCheckOn = getenv("BT3_HEAP_CHECK") != NULL; } \
-        if (gHeapCheckOn) { Heap_CheckAll((tag), (const void *)(ret)); } \
+        if (gHeapCheckOn) { Heap_CheckAll((tag), (heap), (size), (align), (tail), (const void *)(ret)); } \
     } while (0)
 #else
-#define HEAP_CHECK(tag, ret) do { } while (0)
+#define HEAP_CHECK(tag, heap, size, align, tail, ret) do { } while (0)
 #endif
 
 HeapBlock *Heap_AllocBlock(s32 size, u32 align, s32 fromTail, s32 heap) {
@@ -223,7 +232,7 @@ HeapBlock *Heap_AllocBlock(s32 size, u32 align, s32 fromTail, s32 heap) {
     HeapBlock *free;
     s32 need;
 
-    HEAP_CHECK("alloc:enter", __builtin_return_address(0));
+    HEAP_CHECK("alloc:enter", heap, size, align, fromTail, __builtin_return_address(0));
     if (size <= 0) {
         return NULL;
     }
@@ -252,12 +261,12 @@ HeapBlock *Heap_AllocBlock(s32 size, u32 align, s32 fromTail, s32 heap) {
         need = block->size;
     }
     Heap_InitUsedBlock(block, need, size, align, fromTail);
-    HEAP_CHECK("alloc:leave", __builtin_return_address(0));
+    HEAP_CHECK("alloc:leave", heap, size, align, fromTail, __builtin_return_address(0));
     return block;
 }
 
 void Heap_FreeBlock(HeapBlock *block) {
-    HEAP_CHECK("free:enter", __builtin_return_address(0));
+    HEAP_CHECK("free:enter", HEAP_ANY, 0, 0, 0, __builtin_return_address(0));
     HeapBlock *prev;
     HeapBlock *next;
     s32 merge = 0;
@@ -290,7 +299,7 @@ void Heap_FreeBlock(HeapBlock *block) {
         *(s32 *)((u8 *)prev + prev->size - 4) = prev->size;
         break;
     }
-    HEAP_CHECK("free:leave", __builtin_return_address(0));
+    HEAP_CHECK("free:leave", HEAP_ANY, 0, 0, 0, __builtin_return_address(0));
 }
 
 void Heap_Init(void) {
