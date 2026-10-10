@@ -1379,7 +1379,12 @@ void BtlAct_ClashBlowsHandler(BtlActEChr *chr, s32 phase) {
             case 0x173:
             case 0x174:
                 BtlAnim_AdvanceLoop(chr, 0);
+#ifdef BT3_MOD_DBZT4
+                /* The mod sets 0xE7 instead of 0xE6 (site 0x1F4920). */
+                BtlChar_SetFlag(chr, 0xE7);
+#else
                 BtlChar_SetFlag(chr, 0xE6);
+#endif
                 BtlChar_SetFlag(chr, 0xED);
 #ifdef BT3_MOD_DBZT4
                 if (Bt4_ClashBlowTest(chr)) {

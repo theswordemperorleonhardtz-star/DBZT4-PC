@@ -922,7 +922,13 @@ s32 BtlHit_CheckRush(void) {
                 }
             } else {
                 if ((st & 0xB1) && !BtlChar_TestFlag(b, 0x5A)) {
+#ifdef BT3_MOD_DBZT4
+                    /* The mod sets 0x6F here instead of the miss flag 0x63 (site 0x1C9474: the delay
+                       slot of the preceding branch and the BtlChar_SetFlag argument are both 111). */
+                    BtlChar_SetFlag(a, 0x6F);
+#else
                     BtlChar_SetFlag(a, 0x63);
+#endif
                     if (BtlChar_FrameMod(2)) {
                         flag = 0x74;
                     } else {
