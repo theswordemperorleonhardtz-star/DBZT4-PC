@@ -604,7 +604,13 @@ void UbTeamSel_Draw(void) {
             chara = gUbTeamSel->sel->chip[i / cols][i % cols];
         }
         if (gUbTeamSel->flags & UBSEL_DP) {
+#ifdef BT3_MOD_DBZT4
+            /* The mod's replacement (DBZQ 0x3C71A8, site 0x3703AC): the characters it adds count as
+               real ones here, exactly as in TeamSel_Draw (DBZQ 0x3C60EC). */
+            if (chara < UB_ID_RANDOM || chara >= 165) {
+#else
             if (chara < UB_ID_RANDOM) {
+#endif
                 cost = ChrTbl_GetCost(chara);
             } else {
                 cost = 0;
