@@ -274,9 +274,11 @@ void *File_RequestSized(int32_t id, void *buf, int32_t size) {
     fprintf(stderr, "bt3: file id %d is %d bytes but its buffer is %d: read into a %d-byte buffer\n",
             (int)id, (int)(sectors * SECTOR), (int)size, (int)(sectors * SECTOR));
     fflush(stderr);
-    if (buf != NULL) {
-        Heap_Free(buf); /* the caller is about to replace it */
-    }
+    /* The old buffer is deliberately NOT given back: the game keeps pointers to its buffers in more than one
+       place (a BtlResFile has buf and orig, the effect loader keeps its own), and freeing it here left those
+       pointers dangling -- the next read then parsed another file's data as pointer offsets (a wild address in
+       Res_RelocateOffsets). It is a few hundred kilobytes per file that did not fit, once. */
+    (void)buf;
     ADXF_Close(h);
     return dst;
 }
