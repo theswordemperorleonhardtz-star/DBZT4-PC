@@ -100,8 +100,15 @@ extern void GfxAlphaKey_Draw(void);
 
 extern f32 gBtlObjFarDist[];
 
-/* File_Request is called with a third argument (the buffer size), which it ignores. */
+/* File_Request is called with a third argument (the buffer size), which it ignores. In the port that size
+   is honoured: File_RequestSized grows the buffer when the file does not fit, because a read past it tears
+   the game's heap (the port's fixed buffers are the console disc's sizes, and this disc's files are bigger). */
+#ifdef PORT
+extern void *File_RequestSized(s32 id, void *buf, s32 size);
+#define File_Request3(id, buf, size) File_RequestSized((id), (buf), (size))
+#else
 #define File_Request3(id, buf, size) ((void *(*)(s32, void *, s32))File_Request)(id, buf, size)
+#endif
 
 /* BtlObj_UpdateVisibility only matches when the compiler has not seen the body of BtlObjVis_GetList (it changes
    a branch-likely choice): the original had a file boundary somewhere between the two. */
