@@ -956,6 +956,12 @@ void EftEmit_LoadSet(void *owner, EftSet *set, EftSetHead *given, s32 *base, s32
     } else {
         head = (EftSetHead *)BtlScene_GetPackEntry(base, idx);
     }
+#ifdef PORT
+    /* BT3_PACK_TRACE=1: the head a real pack resolves to, with its first words. The mod's packs read as
+       mask = 4 followed by four 0x40 counts, which cannot be the decompiled EftSetHead (its byte 4 is
+       nGroups, and 0x40 groups do not exist). This says where head actually landed. */
+    Port_TracePack(common == 1 ? "loadset-common" : "loadset", idx, (int)sizeof(EftSetHead), head, base);
+#endif
     off = sizeof(EftSetHead);
     set->head = head;
     defs = (EftSetGroupDef *)((u8 *)head + off);
