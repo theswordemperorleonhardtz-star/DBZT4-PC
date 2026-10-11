@@ -236,11 +236,17 @@ void *File_RequestSized(int32_t id, void *buf, int32_t size) {
         return File_Request(id, buf); /* no handle: the queue's own open decides (it waits for a missing file) */
     }
     sectors = ADXF_GetFsizeSct(f);
-    if (buf != NULL && size <= 0) {
-        /* The caller did not say how big its buffer is (BtlRes_LoadFile passes file->size, which starts at 0).
-           The game heap knows: ask it. A buffer that is not the heap's (a port block) gives 0 and the ordinary
-           path is taken. */
-        size = (int32_t)Port_HeapBlockSize(buf);
+    if (buf != NULL) {
+        /* What the caller says is not the buffer's size: BtlRes_LoadFile passes file->size, which is the size
+           of the file that was loaded before -- zero at first, then the previous file's size. The game heap
+           knows the truth. A buffer that is not the heap's (a port block, a stage buffer) gives 0 and the
+           caller's number stands. This is what the crash came down to: a model buffer of 843776 bytes
+           (BTL_RES_MODEL_SIZE) receiving a file of megabytes. */
+        int32_t cap = (int32_t)Port_HeapBlockSize(buf);
+
+        if (cap > 0) {
+            size = cap;
+        }
     }
     if (buf == NULL || size <= 0 || sectors * SECTOR <= size) {
         ADXF_Close(h);
