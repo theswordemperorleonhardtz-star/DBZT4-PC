@@ -10,6 +10,7 @@
 /* plat_file.c: says when a resource offset table gives an entry outside the game's memory (a table that does
    not match the layout the port expects). Declared here, above its first use. */
 extern void Port_NoteBadEntry(const char *what, int idx, unsigned word, void *out, void *base);
+extern void Port_TracePack(const char *what, int side, int idx, const void *base, const void *entry);
 #endif
 
 /*
@@ -267,7 +268,11 @@ s32 *BtlScene_GetCharPackEntry(s32 side, s32 idx) {
     s32 *base = BtlCharApi_GetPlayerObjUnk58(side);
 
     if (base != NULL) {
-        return (s32 *)((u8 *)base + ((u32)base[idx] >> 2 << 2));
+        s32 *e = (s32 *)((u8 *)base + ((u32)base[idx] >> 2 << 2));
+#ifdef PORT
+        Port_TracePack("charpack", side, idx, base, e);
+#endif
+        return e;
     }
     return base;
 }

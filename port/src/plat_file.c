@@ -202,6 +202,30 @@ void *ADXF_Open(char *fname, void *atr) {
 
 extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
 
+/* BT3_PACK_TRACE=1: every character pack a battle asks for, with the first words of its table. Tells whether a
+   pack pointer is a real table at all (the effect code walked one that was not and crashed). */
+void Port_TracePack(const char *what, int side, int idx, const void *base, const void *entry) {
+    static int on = -1;
+    static int count;
+    int i;
+
+    if (on < 0) {
+        on = getenv("BT3_PACK_TRACE") != NULL;
+    }
+    if (!on || count >= 24) {
+        return;
+    }
+    count++;
+    fprintf(stderr, "bt3: %s side %d idx %d: base %p entry %p words:", what, side, idx, base, entry);
+    if (base != NULL) {
+        for (i = 0; i < 8; i++) {
+            fprintf(stderr, " %08X", ((const unsigned *)base)[i]);
+        }
+    }
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
+
 /* BtlScene_GetPackEntry and BtlScene_GetCommonEntry turn a word of a resource's offset table into a pointer.
    A table that does not match the game's layout (a mod's data) gives an entry outside every region the game
    uses, and the code that reads it then walks off into nothing (Res_RelocateOffsets read 0x6E1B9F40). Say
