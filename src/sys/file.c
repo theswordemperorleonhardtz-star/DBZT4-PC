@@ -349,10 +349,35 @@ void *File_Request(s32 id, void *buf) {
 #endif
 
     req = (FileReq *)List_PopFront(&queue->free);
+#ifdef PORT
+    {   /* the pointer and the free list head: a bad req shows here before anything is written through it */
+        char what[128];
+        snprintf(what, sizeof(what), "File_Request: req=%p free.head=%p id=%d", (void *)req,
+                 (void *)queue->free.head, (int)id);
+        Heap_CheckNow(what);
+    }
+#endif
     req->flags = flags;
+#ifdef PORT
+    Heap_CheckNow("File_Request: after req->flags");
+#endif
     req->id = id;
+#ifdef PORT
+    Heap_CheckNow("File_Request: after req->id");
+#endif
     req->sectors = sectors;
+#ifdef PORT
+    Heap_CheckNow("File_Request: after req->sectors");
+#endif
     req->buf = dst;
+#ifdef PORT
+    {   /* where the fields are and where dst points: both must be in the game's own memory */
+        char what[160];
+        snprintf(what, sizeof(what), "File_Request: after req->buf (req=%p node=%p dst=%p sectors=%d)", (void *)req,
+                 (void *)&req->node, dst, (int)sectors);
+        Heap_CheckNow(what);
+    }
+#endif
     List_PushBack(&queue->pending, &req->node);
 #ifdef PORT
     Heap_CheckNow("File_Request: after the request was queued");

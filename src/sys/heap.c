@@ -181,6 +181,7 @@ HeapBlock *Heap_FindFreeFromTail(s32 heap, s32 size) {
        python3 _bt4pc/tools/symbolize.py bt3.exe.map <the crash report>
    Off unless the variable is set, so a normal run pays nothing. */
 static int gHeapCheckOn = -1;
+static int gHeapCheckVerbose;
 /* The last few operations, with their caller and its caller: the tear happens between two of them,
    and the culprit is the game code that ran in between, so the sequence names it. */
 #define HEAP_HIST 16
@@ -253,17 +254,22 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
 /* The same walk, callable from elsewhere in the port (the file path) to pin the exact line. */
 void Heap_CheckNow(const char *what) {
     if (gHeapCheckOn < 0) {
-        gHeapCheckOn = getenv("BT3_HEAP_CHECK") != NULL;
+        const char *e = getenv("BT3_HEAP_CHECK");
+        gHeapCheckOn = e != NULL;
+        gHeapCheckVerbose = e != NULL && e[0] == '2'; /* 2: also print every step, so the tail says how far it got */
         if (gHeapCheckOn) { fprintf(stderr, "bt3: heap check on (every allocation and free)\n"); fflush(stderr); }
     }
     if (gHeapCheckOn) {
+        if (gHeapCheckVerbose) { fprintf(stderr, "bt3: heap ok through: %s\n", what); fflush(stderr); }
         Heap_CheckAll(what, HEAP_ANY, 0, 0, 0, 0, 0);
     }
 }
 
 #define HEAP_CHECK(tag, heap, size, align, tail, ret) do { \
         if (gHeapCheckOn < 0) { \
-            gHeapCheckOn = getenv("BT3_HEAP_CHECK") != NULL; \
+            const char *e = getenv("BT3_HEAP_CHECK"); \
+            gHeapCheckOn = e != NULL; \
+            gHeapCheckVerbose = e != NULL && e[0] == '2'; \
             if (gHeapCheckOn) { fprintf(stderr, "bt3: heap check on (every allocation and free)\n"); fflush(stderr); } \
         } \
         if (gHeapCheckOn) { \
