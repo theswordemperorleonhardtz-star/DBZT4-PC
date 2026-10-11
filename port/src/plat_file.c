@@ -79,10 +79,26 @@ static const char *alias_target(const char *rel) {
     return NULL;
 }
 
+/* BT3_FILE_TRACE=1: every file the game opens and how big it is. For sizing the port's own buffers from the
+   disc's files: the game's buffers are constants (battle_work.h), and a disc whose files are bigger overruns
+   them when the file is read into the caller's buffer. */
+static void file_trace(const char *rel, long size) {
+    static int on = -1;
+
+    if (on < 0) {
+        on = getenv("BT3_FILE_TRACE") != NULL;
+    }
+    if (on) {
+        fprintf(stderr, "bt3: file %s -> %ld bytes\n", rel, size);
+        fflush(stderr);
+    }
+}
+
 static PortFile *open_rel(const char *rel) {
     PortFile *f;
     long size = Port_FileSize(rel); /* (says so itself when the file is missing) */
 
+    file_trace(rel, size);
     if (size < 0) {
         return NULL;
     }
