@@ -536,7 +536,11 @@ BtlResWork *BtlRes_GetWork(void) {
 #define BT4_CHARA_STRIDE 40
 #define BT4_RES_MODEL_BASE 70039  /* 0x11197 */
 #define BT4_RES_ANIM0_BASE 70189  /* 0x1122D */
-#define BT4_RES_ANIM1_BASE 70213  /* 0x11235 */
+#define BT4_RES_ANIM1_BASE 70197  /* 0x11235 -> 70197: the effect pack file.  The mod's own fallback constant in
+                                     Bt4_CharaResAnim1 is c + 3557, and 3557 + 66640 = 70197; BT4_RES_ANIM0_BASE
+                                     (70189) matches its fallback (c + 3549) the same way.  With 70213 the slot's
+                                     third buffer got the model file at +174 instead of the effect pack file at
+                                     +158, so the effect code read a model's entries as technique packs. */
 
 /* The CRI file calls the game layer uses (src/sys/file.c declares these itself; include/sys/file.h
    does not because the PS2 build gets them from the library headers). */
