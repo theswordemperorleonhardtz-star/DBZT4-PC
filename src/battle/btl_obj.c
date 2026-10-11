@@ -1246,6 +1246,13 @@ void BtlRes_LoadFile(BtlResFile *file, s32 fromHeap) {
     } else {
         if (file->id >= 0) {
             file->buf = File_Request3(file->id, file->buf, file->size);
+#ifdef PORT
+            if (file->buf != NULL) {
+                /* the port hands back a buffer that holds the file when the fixed one was too small; the
+                   "original" pointer has to follow, or freeing the record would give back the old block */
+                file->orig = file->buf;
+            }
+#endif
         }
     }
 }

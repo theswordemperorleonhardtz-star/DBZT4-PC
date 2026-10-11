@@ -225,6 +225,7 @@ void *File_RequestSized(int32_t id, void *buf, int32_t size) {
     extern void ADXF_Close(void *h);
     extern void *Heap_Alloc(int32_t size, uint32_t align, int32_t fromTail, int32_t heap);
     extern void Heap_Free(void *ptr);
+    extern uint32_t Port_HeapBlockSize(void *ptr); /* heap.c */
     void *h = File_OpenById(id);
     PortFile *f = h;
     void *dst;
@@ -235,6 +236,12 @@ void *File_RequestSized(int32_t id, void *buf, int32_t size) {
         return File_Request(id, buf); /* no handle: the queue's own open decides (it waits for a missing file) */
     }
     sectors = ADXF_GetFsizeSct(f);
+    if (buf != NULL && size <= 0) {
+        /* The caller did not say how big its buffer is (BtlRes_LoadFile passes file->size, which starts at 0).
+           The game heap knows: ask it. A buffer that is not the heap's (a port block) gives 0 and the ordinary
+           path is taken. */
+        size = (int32_t)Port_HeapBlockSize(buf);
+    }
     if (buf == NULL || size <= 0 || sectors * SECTOR <= size) {
         ADXF_Close(h);
         return File_Request(id, buf);

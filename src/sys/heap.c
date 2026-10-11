@@ -251,6 +251,16 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
     }
 }
 
+/* Capacity of the block that holds the pointer, from the heap's own bookkeeping: 0 if it is not one of its
+   blocks (a port block, say). The file path uses it, because a caller that passes 0 for its buffer size still
+   has a buffer whose size the heap knows -- and reading a file into a buffer that is too small is what tore
+   the heap. */
+u32 Port_HeapBlockSize(void *ptr) {
+    HeapBlock *block = Heap_FindBlock((u32)ptr);
+
+    return block != NULL ? (u32)block->dataSize : 0;
+}
+
 /* The same walk, callable from elsewhere in the port (the file path) to pin the exact line. */
 void Heap_CheckNow(const char *what) {
     if (gHeapCheckOn < 0) {
