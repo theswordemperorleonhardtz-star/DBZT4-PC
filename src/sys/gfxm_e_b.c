@@ -171,6 +171,24 @@ void BtlObjMdl_BindFiles(ObjMdlObj *obj) {
     mdl->model = mdl->file;
     mdl->meshes = (ObjMdlMesh *)((u8 *)mdl->file + mdl->file->meshOfs);
     if (!mdl->file->bound) {
+#ifdef PORT
+        /* The five words at BtlObj + 0x9C hold offsets into the model data block; the game turns them into the
+           pointers the effect code reads as a character's technique packs (BtlCharApi_GetPlayerObjUnk9C hands
+           them straight to EftEmit_LoadSet). The PC build never did, so the effect setup read a pack out of
+           whatever the words happened to be (they read 2, 8, 0x20, 8, 0) and then walked off into nothing.
+           Only on the first bind (a later one would add the base to a pointer twice), and only for words that
+           look like an offset -- a NULL model file or a word that is not an offset is left alone. */
+        {
+            u8 *base = (u8 *)mdl->file;
+            s32 *five = (s32 *)((u8 *)obj + 0x9C);
+            s32 k;
+            for (k = 0; k < 5; k++) {
+                if (base != NULL && five[k] > 0 && (u32)five[k] < 0x10000000u) {
+                    five[k] = (s32)(unsigned)(base + ((u32)five[k] & ~3u));
+                }
+            }
+        }
+#endif
         mdl->file->tbp = 0x3480;
         mdl->model->cbp = 0x3C00;
         mdl->model->cbp2 = 0x3D00;
