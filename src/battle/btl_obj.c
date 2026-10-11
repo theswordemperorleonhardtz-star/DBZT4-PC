@@ -1244,7 +1244,14 @@ s32 BtlRes_FreeFile(BtlResFile *file) {
 }
 
 /* Queues the read of a file: into a new heap buffer (fromHeap == 1) or into the record's own buffer. */
+#ifdef PORT
+extern void Port_TraceFile(int id, int size, const void *buf, int fromHeap); /* plat_file.c */
+#endif
+
 void BtlRes_LoadFile(BtlResFile *file, s32 fromHeap) {
+#ifdef PORT
+    Port_TraceFile(file->id, file->size, file->buf, fromHeap);
+#endif
     if (fromHeap == 1) {
         BtlRes_FreeFile(file);
         if (file->id >= 0) {

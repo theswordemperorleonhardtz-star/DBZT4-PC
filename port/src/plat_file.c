@@ -202,6 +202,32 @@ void *ADXF_Open(char *fname, void *atr) {
 
 extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
 
+/* BT3_PACK_TRACE=1: every model file a resource slot loads (id, size, the buffer it goes into, and the first
+   words of whatever is already there). Says whether the third file of a slot, whose entries the effect code
+   reads as a character's technique packs, is the file the mod expects. */
+void Port_TraceFile(int id, int size, const void *buf, int fromHeap) {
+    static int on = -1;
+    static int count;
+    const unsigned *w = (const unsigned *)buf;
+    int k;
+
+    if (on < 0) {
+        on = getenv("BT3_PACK_TRACE") != NULL;
+    }
+    if (!on || count >= 40) {
+        return;
+    }
+    count++;
+    fprintf(stderr, "bt3: resfile id %-6d size %-9d buf %p%s words:", id, size, buf, fromHeap ? " (heap)" : "");
+    if (buf != NULL) {
+        for (k = 0; k < 4; k++) {
+            fprintf(stderr, " %08X", w[k]);
+        }
+    }
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
+
 /* BT3_PACK_TRACE=1: the five words at object + 0x9C, which the effect code reads as a character's technique
    packs. Printed at object creation and again when the effect code asks for them: the difference says whether the
    loader was supposed to fill them. */
