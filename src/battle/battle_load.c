@@ -516,15 +516,30 @@ s32 BtlLoad_StepChara(BtlJob *job) {
 
     switch (job->state) {
     case 0:
+#ifdef BT3_MOD_DBZT4
+        /* This disc is the mod's: its character files are named by the mod's own mapping (the second half of
+           this file uses the same three functions), not by the console's chara * 10 + ... ids. With the
+           console formulas here the slot's third buffer got the wrong file, and the effect code reads that
+           file's entries 1..5 as a character's technique packs -- which crashed the battle in EftBlastMgr_Init
+           (a pack of 0x30A24A40 whose first words were 3, 0x4039E3F0, 0, 0, instead of an offset table). */
+        model = Bt4_CharaResModel(job->chara, job->costume, job->variant);
+#else
         if (job->variant != 0) {
             model = job->chara * 10 + job->costume + (BTL_FILE_CHARA + 4);
         } else {
             model = job->chara * 10 + job->costume + BTL_FILE_CHARA;
         }
+#endif
         if (job->modelOnly == 0) {
+#ifdef BT3_MOD_DBZT4
+            file8 = Bt4_CharaResAnim0(job->animChara, job->costume);
+            file9 = Bt4_CharaResAnim1(job->unk1C, job->costume);
+            voice = job->voiceChara + (job->voiceChara >= 166 ? 2450 : 2459);
+#else
             file8 = job->animChara * 10 + (BTL_FILE_CHARA + 8);
             file9 = job->unk1C * 10 + (BTL_FILE_CHARA + 9);
             voice = job->voiceChara + ((gSaveData->flags & SAVE_FLAG_VOICE) ? BTL_FILE_VOICE_ALT : BTL_FILE_VOICE);
+#endif
             BtlRes_Reload(BattleSide_GetModelSlot(job->side), model, file8, file9);
 #ifdef PORT
             Heap_CheckNow("battle_load: after BtlRes_Reload (the model file)");
