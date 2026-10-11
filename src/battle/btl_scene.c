@@ -241,7 +241,7 @@ s32 *BtlScene_GetCommonEntry(s32 idx) {
 s32 *BtlScene_GetPackEntry(s32 *base, s32 idx) {
     s32 *e = (s32 *)((u8 *)base + ((u32)base[idx] >> 2 << 2));
 #ifdef PORT
-    Port_TracePack("pack", (int)(uintptr_t)base, idx, base, e);
+    Port_TracePack("pack", 0, idx, base, e); /* the second field is only for the character-pack trace */
     Port_NoteBadEntry("pack", idx, (u32)base[idx], e, base);
 #endif
     return e;
