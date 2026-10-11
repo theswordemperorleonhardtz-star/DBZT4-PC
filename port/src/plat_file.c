@@ -209,9 +209,12 @@ extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
    and say exactly which file and how big, so the buffers can be sized from the disc's own files. A file that
    fits goes through the ordinary queue (below), so nothing about the normal path changes. */
 void *File_RequestSized(int32_t id, void *buf, int32_t size) {
-    /* (this file is the port's own: the game's s32 is spelled int32_t here) */
+    /* (this file is the port's own: the game's s32 is spelled int32_t here; the ADXF functions below are
+       declared here because they are defined further down the file) */
     extern void *File_OpenById(int32_t id);   /* sys/file.h: ADXF File_OpenById(s32) */
     extern void *File_Request(int32_t id, void *buf);
+    extern int32_t ADXF_GetFsizeSct(void *h);
+    extern void ADXF_Close(void *h);
     void *h = File_OpenById(id);
     PortFile *f = h;
     int32_t sectors;
