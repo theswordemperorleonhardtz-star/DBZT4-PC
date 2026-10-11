@@ -75,6 +75,10 @@ extern BtlJobPool gBtlJobPool;
 extern s32 gBtlLoadHandle; /* handle of the model BtlLoad_StepObject is loading */
 extern s32 gBtlLoadObj;    /* object made from it */
 
+#ifdef PORT
+extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
+#endif
+
 /* sys/file.h declares File_Request with two parameters (it ignores a third); every caller here passes the
  * buffer size as a third argument. In the port that size is honoured (File_RequestSized reads at most what
  * fits and says when a file does not), because a read past the buffer tears the game's heap; on a console the
@@ -522,7 +526,13 @@ s32 BtlLoad_StepChara(BtlJob *job) {
             file9 = job->unk1C * 10 + (BTL_FILE_CHARA + 9);
             voice = job->voiceChara + ((gSaveData->flags & SAVE_FLAG_VOICE) ? BTL_FILE_VOICE_ALT : BTL_FILE_VOICE);
             BtlRes_Reload(BattleSide_GetModelSlot(job->side), model, file8, file9);
+#ifdef PORT
+            Heap_CheckNow("battle_load: after BtlRes_Reload (the model file)");
+#endif
             res->bank = File_Request3(voice, res->bank, res->bankSize);
+#ifdef PORT
+            Heap_CheckNow("battle_load: after the voice bank request");
+#endif
             if (!BtlCtrl_IsSwitching(job->side)) {
                 BattleMember *next;
 
@@ -532,6 +542,9 @@ s32 BtlLoad_StepChara(BtlJob *job) {
                 }
                 next = BattleSide_GetMember(job->side, member);
                 next->buf[1] = File_Request3(job->chara * 2 + job->side + BTL_FILE_CHARA_DATA, next->buf[1], BTL_MEMBER_BUF_SIZE);
+#ifdef PORT
+                Heap_CheckNow("battle_load: after the member request");
+#endif
             }
         } else {
             BtlRes_Reload(BattleSide_GetModelSlot(job->side), model, -1, -1);
@@ -632,7 +645,13 @@ s32 Bt4_BtlLoad_StepChara(BtlJob *job) {
             file8 = Bt4_CharaResAnim0(job->animChara, job->costume);
             file9 = Bt4_CharaResAnim1(job->unk1C, job->costume);
             BtlRes_Reload(BattleSide_GetModelSlot(job->side), model, file8, file9);
+#ifdef PORT
+            Heap_CheckNow("battle_load: after BtlRes_Reload (the model file)");
+#endif
             res->bank = File_Request3(voice, res->bank, res->bankSize);
+#ifdef PORT
+            Heap_CheckNow("battle_load: after the voice bank request");
+#endif
             if (!BtlCtrl_IsSwitching(job->side)) {
                 BattleMember *next;
                 s32 c;
@@ -644,6 +663,9 @@ s32 Bt4_BtlLoad_StepChara(BtlJob *job) {
                 next = BattleSide_GetMember(job->side, member);
                 c = job->chara >= 166 ? job->chara - 9 : job->chara;
                 next->buf[1] = File_Request3(c * 2 + job->side + 1589, next->buf[1], BTL_MEMBER_BUF_SIZE);
+#ifdef PORT
+            Heap_CheckNow("battle_load: after the member request (the mod's added files)");
+#endif
             }
         } else {
             BtlRes_Reload(BattleSide_GetModelSlot(job->side), model, -1, -1);
