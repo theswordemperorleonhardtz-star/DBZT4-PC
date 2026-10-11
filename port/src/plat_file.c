@@ -206,7 +206,7 @@ extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
    A table that does not match the game's layout (a mod's data) gives an entry outside every region the game
    uses, and the code that reads it then walks off into nothing (Res_RelocateOffsets read 0x6E1B9F40). Say
    which table and which index produced it. */
-void Port_NoteBadEntry(const char *what, int32_t idx, uint32_t word, void *out, void *base) {
+void Port_NoteBadEntry(const char *what, int idx, unsigned word, void *out, void *base) {
     uintptr_t p = (uintptr_t)out;
     uintptr_t b = (uintptr_t)base;
 

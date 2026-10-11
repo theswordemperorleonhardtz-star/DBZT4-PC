@@ -231,7 +231,7 @@ s32 *BtlScene_GetCommonEntry(s32 idx) {
 }
 
 #ifdef PORT
-extern void Port_NoteBadEntry(const char *what, s32 idx, u32 word, void *out, void *base); /* plat_file.c */
+extern void Port_NoteBadEntry(const char *what, int idx, unsigned word, void *out, void *base); /* plat_file.c */
 #endif
 
 /* Returns entry idx of a pack: base + (offset table word idx, rounded down to 4). */
