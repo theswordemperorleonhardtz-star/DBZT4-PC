@@ -203,6 +203,7 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
         u8 *lo = (u8 *)gHeapStart[h];
         u8 *hi = (u8 *)gHeapEnd[h];
         HeapBlock *block = gHeapStart[h];
+        HeapBlock *prev = NULL;
         s32 guard = 0;
 
         while (block != NULL) {
@@ -213,6 +214,14 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
                 fprintf(stderr,
                         "bt3: HEAP BROKEN in heap %d: %s (heap=%d size=%d align=%u tail=%d, its caller %p)\n",
                         (int)h, what, (int)heap, (int)size, align, (int)fromTail, ret);
+                /* The walk jumped here because the block before it was overwritten: that one is the victim,
+                   and its size says which fixed buffer it was (BTL_RES_MODEL_SIZE, BTL_MEMBER_BUF_SIZE, ...). */
+                if (prev != NULL) {
+                    fprintf(stderr, "bt3: the block BEFORE it (the one that was overwritten): at %p size %d"
+                                    " dataSize %d used %d magic %08X, ends at %p\n",
+                            (void *)prev, (int)prev->size, (int)prev->dataSize, (int)prev->used,
+                            (unsigned)prev->magic, (void *)((u8 *)prev + prev->size));
+                }
                 fprintf(stderr, "bt3: the block at %p: magic %08X (want %08X) size %d dataSize %d used %d\n",
                         (void *)block, (unsigned)block->magic, (unsigned)HEAP_MAGIC, (int)block->size,
                         (int)block->dataSize, (int)block->used);
@@ -239,6 +248,7 @@ static void Heap_CheckAll(const char *what, s32 heap, s32 size, u32 align, s32 f
                 fflush(stderr);
                 exit(3);
             }
+            prev = block;
             block = Heap_NextBlock(block);
         }
     }
