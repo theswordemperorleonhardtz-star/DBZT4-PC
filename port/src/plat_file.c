@@ -210,8 +210,11 @@ void Port_NoteBadEntry(const char *what, int idx, unsigned word, void *out, void
     uintptr_t p = (uintptr_t)out;
     uintptr_t b = (uintptr_t)base;
 
-    if (p >= 0x10000000u && p < 0x80000000u) {
-        return; /* inside the PS2 address space: a real entry */
+    /* The game's memory: the port's own region (0x13000000, and the heap the port reserves below 2 GB), the
+       program image with the game's own data (0x20000000 up), and the game heap (0x30000000 up). Anything
+       else is a table that does not match what the port expects. */
+    if (p >= 0x13000000u && p < 0x40000000u) {
+        return;
     }
     fprintf(stderr, "bt3: %s entry %d: base %p word %08X -> %p (outside the game's memory)\n",
             what, (int)idx, base, (unsigned)word, out);
