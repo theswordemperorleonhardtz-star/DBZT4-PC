@@ -202,6 +202,23 @@ void *ADXF_Open(char *fname, void *atr) {
 
 extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
 
+/* BtlScene_GetPackEntry and BtlScene_GetCommonEntry turn a word of a resource's offset table into a pointer.
+   A table that does not match the game's layout (a mod's data) gives an entry outside every region the game
+   uses, and the code that reads it then walks off into nothing (Res_RelocateOffsets read 0x6E1B9F40). Say
+   which table and which index produced it. */
+void Port_NoteBadEntry(const char *what, int32_t idx, uint32_t word, void *out, void *base) {
+    uintptr_t p = (uintptr_t)out;
+    uintptr_t b = (uintptr_t)base;
+
+    if (p >= 0x10000000u && p < 0x80000000u) {
+        return; /* inside the PS2 address space: a real entry */
+    }
+    fprintf(stderr, "bt3: %s entry %d: base %p word %08X -> %p (outside the game's memory)\n",
+            what, (int)idx, base, (unsigned)word, out);
+    (void)b;
+    fflush(stderr);
+}
+
 /* File_LoadSync and File_LoadSyncEx also take the caller's buffer size and ignore it (file.c). Called from
    there when a file does not fit, so the run says which buffers are too small for this disc. */
 void Port_NoteTooBig(int32_t id, int32_t fileBytes, int32_t bufBytes) {

@@ -223,13 +223,24 @@ void BtlScene_Draw(s32 first) {
 /* Returns entry idx of the offset table at the start of common file 3 (gCommonRes->data[1]). */
 s32 *BtlScene_GetCommonEntry(s32 idx) {
     s32 *base = gCommonRes->data[1];
-
-    return (s32 *)((u8 *)base + ((u32)base[idx] >> 2 << 2));
+    s32 *e = (s32 *)((u8 *)base + ((u32)base[idx] >> 2 << 2));
+#ifdef PORT
+    Port_NoteBadEntry("common", idx, (u32)base[idx], e, base);
+#endif
+    return e;
 }
+
+#ifdef PORT
+extern void Port_NoteBadEntry(const char *what, s32 idx, u32 word, void *out, void *base); /* plat_file.c */
+#endif
 
 /* Returns entry idx of a pack: base + (offset table word idx, rounded down to 4). */
 s32 *BtlScene_GetPackEntry(s32 *base, s32 idx) {
-    return (s32 *)((u8 *)base + ((u32)base[idx] >> 2 << 2));
+    s32 *e = (s32 *)((u8 *)base + ((u32)base[idx] >> 2 << 2));
+#ifdef PORT
+    Port_NoteBadEntry("pack", idx, (u32)base[idx], e, base);
+#endif
+    return e;
 }
 
 /* Returns the size of entry idx of a pack (next offset - this offset). */
