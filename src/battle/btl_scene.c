@@ -6,6 +6,12 @@
 #include "sys/common.h"
 #include "sys/heap.h"
 
+#ifdef PORT
+/* plat_file.c: says when a resource offset table gives an entry outside the game's memory (a table that does
+   not match the layout the port expects). Declared here, above its first use. */
+extern void Port_NoteBadEntry(const char *what, int idx, unsigned word, void *out, void *base);
+#endif
+
 /*
  * Battle effect scene, 0x12C9F0..0x12DD80: the task tree the fighter-attached effects run in and the services
  * they share. What it manages and the order of its entry points are described in include/battle/btl_scene.h.
@@ -229,10 +235,6 @@ s32 *BtlScene_GetCommonEntry(s32 idx) {
 #endif
     return e;
 }
-
-#ifdef PORT
-extern void Port_NoteBadEntry(const char *what, int idx, unsigned word, void *out, void *base); /* plat_file.c */
-#endif
 
 /* Returns entry idx of a pack: base + (offset table word idx, rounded down to 4). */
 s32 *BtlScene_GetPackEntry(s32 *base, s32 idx) {
