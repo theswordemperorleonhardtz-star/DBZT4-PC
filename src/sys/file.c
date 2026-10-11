@@ -260,7 +260,11 @@ void File_InitRequests(void) {
 }
 
 /* Reads a whole file and waits for it; opens by name when id < 0, allocates the buffer when buf is NULL. */
-void *File_LoadSyncEx(s32 id, char *name, void *buf, s32 unused) {
+#ifdef PORT
+extern void Port_NoteTooBig(s32 id, s32 fileBytes, s32 bufBytes); /* plat_file.c */
+#endif
+
+void *File_LoadSyncEx(s32 id, char *name, void *buf, s32 maxBytes) {
     ADXF adxf;
     s32 sectors;
     void *dst;
@@ -277,6 +281,14 @@ void *File_LoadSyncEx(s32 id, char *name, void *buf, s32 unused) {
     dst = buf;
     if (buf == NULL) {
         dst = Heap_Alloc(sectors * FILE_SECTOR_SIZE, 0x40, 0, HEAP_ANY);
+#ifdef PORT
+    } else if (maxBytes > 0 && sectors * FILE_SECTOR_SIZE > maxBytes) {
+        /* Read only what fits. The game's fixed buffers (and the menus' 0x16800) were chosen for the console
+           disc's files; reading a bigger one whole runs past the buffer and tears the game's heap, which is
+           what crashed the battle. The run says which file it was, so a buffer can be sized for it. */
+        Port_NoteTooBig(id, sectors * FILE_SECTOR_SIZE, maxBytes);
+        sectors = maxBytes / FILE_SECTOR_SIZE;
+#endif
     }
     while (ADXF_ReadNw(adxf, sectors, dst) != sectors) {
     }

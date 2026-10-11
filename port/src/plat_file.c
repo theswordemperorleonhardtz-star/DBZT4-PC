@@ -202,6 +202,14 @@ void *ADXF_Open(char *fname, void *atr) {
 
 extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
 
+/* File_LoadSync and File_LoadSyncEx also take the caller's buffer size and ignore it (file.c). Called from
+   there when a file does not fit, so the run says which buffers are too small for this disc. */
+void Port_NoteTooBig(int32_t id, int32_t fileBytes, int32_t bufBytes) {
+    fprintf(stderr, "bt3: file id %d is %d bytes but the buffer is %d: only %d read\n",
+            (int)id, (int)fileBytes, (int)bufBytes, (int)(bufBytes - bufBytes % SECTOR));
+    fflush(stderr);
+}
+
 /* battle_load.c passes the caller's buffer size as a third argument; the game's File_Request has two
    parameters and reads the whole file into whatever it is given. When the file is bigger than that, the read
    runs past the buffer and tears the game's heap -- which showed as a crash seconds into a battle, on a disc
