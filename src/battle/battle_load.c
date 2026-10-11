@@ -76,8 +76,15 @@ extern s32 gBtlLoadHandle; /* handle of the model BtlLoad_StepObject is loading 
 extern s32 gBtlLoadObj;    /* object made from it */
 
 /* sys/file.h declares File_Request with two parameters (it ignores a third); every caller here passes the
- * buffer size as a third argument, so the calls go through a cast. */
+ * buffer size as a third argument. In the port that size is honoured (File_RequestSized reads at most what
+ * fits and says when a file does not), because a read past the buffer tears the game's heap; on a console the
+ * cast keeps the original behaviour. */
+#ifdef PORT
+extern void *File_RequestSized(s32 id, void *buf, s32 size);
+#define File_Request3(id, buf, size) File_RequestSized((id), (buf), (size))
+#else
 #define File_Request3(id, buf, size) ((void *(*)(s32, void *, s32))File_Request)(id, buf, size)
+#endif
 
 #ifdef BT3_MOD_DBZT4
 /* The mod's replacement for the two initial voice banks (fragment 0x3BEB00): the character is

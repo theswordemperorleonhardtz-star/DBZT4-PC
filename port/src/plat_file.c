@@ -202,6 +202,39 @@ void *ADXF_Open(char *fname, void *atr) {
 
 extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
 
+/* battle_load.c passes the caller's buffer size as a third argument; the game's File_Request has two
+   parameters and reads the whole file into whatever it is given. When the file is bigger than that, the read
+   runs past the buffer and tears the game's heap -- which showed as a crash seconds into a battle, on a disc
+   whose files are bigger than the ones the port's fixed buffers were chosen for. Read what fits, here and now,
+   and say exactly which file and how big, so the buffers can be sized from the disc's own files. A file that
+   fits goes through the ordinary queue (below), so nothing about the normal path changes. */
+void *File_RequestSized(s32 id, void *buf, s32 size) {
+    extern void *File_OpenById(s32 id);   /* sys/file.h */
+    extern void *File_Request(s32 id, void *buf);
+    void *h = File_OpenById(id);
+    PortFile *f = h;
+    s32 sectors;
+    s32 want;
+
+    if (f == NULL) {
+        return File_Request(id, buf); /* no handle: the queue's own open decides (it waits for a missing file) */
+    }
+    sectors = ADXF_GetFsizeSct(f);
+    if (buf == NULL || size <= 0 || sectors * SECTOR <= size) {
+        ADXF_Close(h);
+        return File_Request(id, buf);
+    }
+    want = size / SECTOR;
+    if (want > 0) {
+        Port_FileReadAt(f->rel, 0, buf, (size_t)want * SECTOR);
+    }
+    fprintf(stderr, "bt3: file id %d is %d bytes but its buffer is %d (read %d): the buffer is too small\n",
+            (int)id, (int)(sectors * SECTOR), (int)size, (int)(want * SECTOR));
+    fflush(stderr);
+    ADXF_Close(h);
+    return buf;
+}
+
 void ADXF_Close(void *h) {
     PortFile *f = h;
 
