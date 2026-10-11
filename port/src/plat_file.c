@@ -215,8 +215,11 @@ void *File_RequestSized(int32_t id, void *buf, int32_t size) {
     extern void *File_Request(int32_t id, void *buf);
     extern int32_t ADXF_GetFsizeSct(void *h);
     extern void ADXF_Close(void *h);
+    extern void *Heap_Alloc(int32_t size, uint32_t align, int32_t fromTail, int32_t heap);
+    extern void Heap_Free(void *ptr);
     void *h = File_OpenById(id);
     PortFile *f = h;
+    void *dst;
     int32_t sectors;
     int32_t want;
 
@@ -228,15 +231,33 @@ void *File_RequestSized(int32_t id, void *buf, int32_t size) {
         ADXF_Close(h);
         return File_Request(id, buf);
     }
-    want = size / SECTOR;
-    if (want > 0) {
-        Port_FileReadAt(f->rel, 0, buf, (size_t)want * SECTOR);
+    /* Give back a buffer that holds the whole file: every caller of File_Request3 assigns the result back
+       (res->stage = File_Request3(...), m->buf[1] = File_Request3(...)), so the bigger one takes effect and
+       the small one goes back to the game's heap. Reading it into the caller's own buffer instead would run
+       past it and tear the heap, which is what made the battle crash seconds in -- the port's buffer sizes
+       are the console disc's, and this disc's files are much bigger (a member file of 680 KB into 4 KB). */
+    dst = Heap_Alloc(sectors * SECTOR, 0x40, 0, 2 /* HEAP_ANY */);
+    if (dst == NULL) {
+        /* no room for the whole file: read what fits, so that nothing is written past the buffer */
+        want = size / SECTOR;
+        if (want > 0) {
+            Port_FileReadAt(f->rel, 0, buf, (size_t)want * SECTOR);
+        }
+        fprintf(stderr, "bt3: file id %d is %d bytes, its buffer %d, no room for a bigger one: read %d\n",
+                (int)id, (int)(sectors * SECTOR), (int)size, (int)(want * SECTOR));
+        fflush(stderr);
+        ADXF_Close(h);
+        return buf;
     }
-    fprintf(stderr, "bt3: file id %d is %d bytes but its buffer is %d (read %d): the buffer is too small\n",
-            (int)id, (int)(sectors * SECTOR), (int)size, (int)(want * SECTOR));
+    Port_FileReadAt(f->rel, 0, dst, (size_t)sectors * SECTOR);
+    fprintf(stderr, "bt3: file id %d is %d bytes but its buffer is %d: read into a %d-byte buffer\n",
+            (int)id, (int)(sectors * SECTOR), (int)size, (int)(sectors * SECTOR));
     fflush(stderr);
+    if (buf != NULL) {
+        Heap_Free(buf); /* the caller is about to replace it */
+    }
     ADXF_Close(h);
-    return buf;
+    return dst;
 }
 
 void ADXF_Close(void *h) {
