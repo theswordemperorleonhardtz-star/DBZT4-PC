@@ -207,13 +207,23 @@ extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
 void Port_TracePack(const char *what, int side, int idx, const void *base, const void *entry) {
     static int on = -1;
     static int count;
+    static const void *seen[8];
     int i;
+    int j;
 
     if (on < 0) {
         on = getenv("BT3_PACK_TRACE") != NULL;
     }
-    if (!on || count >= 24) {
+    if (!on || count >= 24 || base == NULL) {
         return;
+    }
+    for (j = 0; j < count && j < 8; j++) {
+        if (seen[j] == base) {
+            return; /* already shown this table */
+        }
+    }
+    if (count < 8) {
+        seen[count] = base;
     }
     count++;
     fprintf(stderr, "bt3: %s side %d idx %d: base %p entry %p words:", what, side, idx, base, entry);
