@@ -257,11 +257,21 @@ void BtlObjMdl_Init(ObjMdlObj *obj) {
 }
 
 /* Clears the object and builds it from a resource slot. */
+#ifdef PORT
+extern void Port_TraceFive(const char *what, const void *obj); /* plat_file.c */
+#endif
+
 void BtlObjMdl_Create(s32 type, ObjMdlObj *obj, void *res) {
+#ifdef PORT
+    Port_TraceFive("create: before", obj);
+#endif
     memset(obj, 0, sizeof(ObjMdlObj));
     obj->type = type;
     obj->res = res;
     BtlObjMdl_Init(obj);
+#ifdef PORT
+    Port_TraceFive("create: after", obj);
+#endif
 }
 
 /* Releases what BtlObjMdl_Init claimed and clears the object. Does nothing for an object that was never built. */

@@ -202,6 +202,31 @@ void *ADXF_Open(char *fname, void *atr) {
 
 extern void Heap_CheckNow(const char *what); /* heap.c, with BT3_HEAP_CHECK=1 */
 
+/* BT3_PACK_TRACE=1: the five words at object + 0x9C, which the effect code reads as a character's technique
+   packs. Printed at object creation and again when the effect code asks for them: the difference says whether the
+   loader was supposed to fill them. */
+void Port_TraceFive(const char *what, const void *obj) {
+    static int on = -1;
+    static int count;
+    const int *five;
+    int k;
+
+    if (on < 0) {
+        on = getenv("BT3_PACK_TRACE") != NULL;
+    }
+    if (!on || obj == NULL || count >= 12) {
+        return;
+    }
+    count++;
+    five = (const int *)((const unsigned char *)obj + 0x9C);
+    fprintf(stderr, "bt3: five %-16s obj %p:", what, obj);
+    for (k = 0; k < 5; k++) {
+        fprintf(stderr, " %08X", (unsigned)five[k]);
+    }
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
+
 /* BT3_PACK_TRACE=1: every character pack a battle asks for, with the first words of its table. Tells whether a
    pack pointer is a real table at all (the effect code walked one that was not and crashed). */
 void Port_TracePack(const char *what, int side, int idx, const void *base, const void *entry) {
