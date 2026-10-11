@@ -399,9 +399,18 @@ f32 EftShot_GetLeadTime(EftHSlot *slot) {
     return t;
 }
 
+#ifdef PORT
+extern void Port_TracePack(const char *what, int side, int idx, const void *base, const void *entry);
+#endif
+
 /* The effect pack of a technique slot, from the fighter object. */
 s32 EftShot_GetCharPack(s32 chr, s32 slot) {
-    return BtlCharApi_GetPlayerObjUnk9C(chr, slot);
+    s32 pack = BtlCharApi_GetPlayerObjUnk9C(chr, slot);
+
+#ifdef PORT
+    Port_TracePack("charpack", chr, slot, (const void *)(unsigned)pack, NULL);
+#endif
+    return pack;
 }
 
 /* ---- effect type -1: nothing ------------------------------------------------------------------------------ */
